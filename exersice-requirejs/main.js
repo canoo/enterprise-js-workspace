@@ -1,17 +1,17 @@
-(function () {
+(function (App) {
 
     document.addEventListener('DOMContentLoaded', function () {
 
         var inputEl = document.getElementById('input');
         var detailEl = document.getElementById('detail');
 
-        var model = new Model();
-        var detailView = new DetailView(detailEl);
-        var inputView = new InputView(inputEl);
+        var model = new App.Model();
+        var detailView = new App.DetailView(detailEl);
+        var inputView = new App.InputView(inputEl);
 
         inputView.render();
 
-        var controller = new Controller({
+        var controller = new App.Controller({
             input : inputView,
             detail: detailView,
             model : model
@@ -19,5 +19,5 @@
 
     }, false);
 
-})();
+})(App);
 

@@ -1,4 +1,4 @@
-var Model = (function () {
+define(function() {
 
     var Model = function (options) {
         options = options || {};
@@ -19,4 +19,4 @@ var Model = (function () {
 
     return Model;
 
-})(this);
+});

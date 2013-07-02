@@ -1,12 +1,11 @@
-var DetailView = (function(){
-
+define(function() {
     var template = function(context) {
         context = context || {};
         var items = context.items || [];
 
         var result = "";
-        items.forEach(function (item) {
-            result += "<li>" + item.name + "</li>"
+        items.forEach(function (item, index) {
+            result += "<li>" + (index + 1) + ". " + item.name + "</li>";
         });
         return "<ul>" + result + "</ul>";
     };
@@ -28,4 +27,4 @@ var DetailView = (function(){
 
     return View;
 
-})(this);
+});
