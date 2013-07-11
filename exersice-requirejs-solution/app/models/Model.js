@@ -5,6 +5,10 @@ define(function() {
         this.items = options.items || [];
     };
 
+    Model.prototype.updateItem = function (item, index) {
+        this.items[index] = item;
+    };
+
     Model.prototype.addItem = function (item) {
         this.items.push(item);
     };

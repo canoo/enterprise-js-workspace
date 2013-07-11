@@ -36,8 +36,10 @@ define(function() {
     View.prototype.addClickListener = function(listener) {
         var me = this;
         this.button.addEventListener('click', function () {
-            listener(me.input.value);
-            me.input.value = "";
+            if(me.input.value) {
+                listener(me.input.value);
+                me.input.value = "";
+            }
         });
     };
 
@@ -45,8 +47,10 @@ define(function() {
         var me = this;
         this.input.addEventListener('keyup', function (event) {
             if(event.keyCode == 13) {
-                listener(me.input.value);
-                me.input.value = "";
+                if(me.input.value) {
+                    listener(me.input.value);
+                    me.input.value = "";
+                }
             }
         });
     };

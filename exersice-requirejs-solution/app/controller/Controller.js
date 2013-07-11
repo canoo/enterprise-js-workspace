@@ -22,6 +22,12 @@ define(function () {
             me.model.addItem({name: input});
             me.detailView.render({ items: me.model.getItems() });
         });
+
+        // add button click listener
+        this.detailView.addChangeListener(function (value, index) {
+            me.model.updateItem({name: value}, index);
+            me.detailView.render({ items: me.model.getItems() });
+        });
     };
 
     return Controller;

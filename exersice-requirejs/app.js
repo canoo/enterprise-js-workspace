@@ -24,6 +24,12 @@ App.Controller = (function(){
             me.model.addItem({name: input});
             me.detailView.render({ items: me.model.getItems() });
         });
+
+        // add button click listener
+        this.detailView.addChangeListener(function (value, index) {
+            me.model.updateItem({name: value}, index);
+            me.detailView.render({ items: me.model.getItems() });
+        });
     };
 
     return Controller;
@@ -37,17 +43,32 @@ App.DetailView = (function(){
         context = context || {};
         var items = context.items || [];
 
-        var result = "";
-        items.forEach(function (item, index) {
-            result += "<li>" + (index + 1) + ". " + item.name + "</li>";
-        });
-        return "<ul>" + result + "</ul>";
-    };
+        var list = document.createElement('ul');
 
+        items.forEach(function (item, index) {
+            var listItem = document.createElement('li');
+            listItem.innerHTML = item.name;
+            listItem.dataset.index = index;
+            listItem.contentEditable = true;
+            listItem.onblur = this.changeListener;
+            list.appendChild(listItem);
+        }, this);
+
+        return list;
+    };
 
     var View = function(el, tpl){
         this.el = el || document.body;
-        this.template = tpl || template;
+        this.template = (tpl || template).bind(this);
+    };
+
+    View.prototype.addChangeListener = function(listener) {
+        this.changeListener = function(event) {
+            var target = event.target;
+            var value = target.innerHTML;
+            var index = target.dataset.index;
+            listener(value, index);
+        }
     };
 
     View.prototype.render = function(context) {
@@ -56,7 +77,8 @@ App.DetailView = (function(){
         while (this.el.firstChild) {
             this.el.removeChild(this.el.firstChild);
         }
-        this.el.innerHTML = html;
+
+        this.el.appendChild(html);
     };
 
     return View;
@@ -101,8 +123,10 @@ App.InputView = (function(){
     View.prototype.addClickListener = function(listener) {
         var me = this;
         this.button.addEventListener('click', function () {
-            listener(me.input.value);
-            me.input.value = "";
+            if(me.input.value) {
+                listener(me.input.value);
+                me.input.value = "";
+            }
         });
     };
 
@@ -110,8 +134,10 @@ App.InputView = (function(){
         var me = this;
         this.input.addEventListener('keyup', function (event) {
             if(event.keyCode == 13) {
-                listener(me.input.value);
-                me.input.value = "";
+                if(me.input.value) {
+                    listener(me.input.value);
+                    me.input.value = "";
+                }
             }
         });
     };
@@ -125,6 +151,10 @@ App.Model = (function () {
     var Model = function (options) {
         options = options || {};
         this.items = options.items || [];
+    };
+
+    Model.prototype.updateItem = function (item, index) {
+        this.items[index] = item;
     };
 
     Model.prototype.addItem = function (item) {

@@ -3,17 +3,32 @@ define(function() {
         context = context || {};
         var items = context.items || [];
 
-        var result = "";
-        items.forEach(function (item, index) {
-            result += "<li>" + (index + 1) + ". " + item.name + "</li>";
-        });
-        return "<ul>" + result + "</ul>";
-    };
+        var list = document.createElement('ul');
 
+        items.forEach(function (item, index) {
+            var listItem = document.createElement('li');
+            listItem.innerHTML = item.name;
+            listItem.dataset.index = index;
+            listItem.contentEditable = true;
+            listItem.onblur = this.changeListener;
+            list.appendChild(listItem);
+        }, this);
+
+        return list;
+    };
 
     var View = function(el, tpl){
         this.el = el || document.body;
-        this.template = tpl || template;
+        this.template = (tpl || template).bind(this);
+    };
+
+    View.prototype.addChangeListener = function(listener) {
+        this.changeListener = function(event) {
+            var target = event.target;
+            var value = target.innerHTML;
+            var index = target.dataset.index;
+            listener(value, index);
+        }
     };
 
     View.prototype.render = function(context) {
@@ -22,8 +37,10 @@ define(function() {
         while (this.el.firstChild) {
             this.el.removeChild(this.el.firstChild);
         }
-        this.el.innerHTML = html;
+
+        this.el.appendChild(html);
     };
+
 
     return View;
 
