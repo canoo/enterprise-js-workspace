@@ -1,19 +1,19 @@
-Exercise 1
-==========
+Exercise 1 - Rquire.js
+======================
 
-- create a folder reasonable folder structure
-  -- app/controller
-  -- app/models
-  -- app/views
-  -- scripts
+# create a folder reasonable folder structure
+  - app/controller
+  - app/models
+  - app/views
+  - scripts
 
-- define a AMD module for each application class
+# define a AMD module for each application class
 
-- create a minimal require.js configuration file
-  -- set up base url
-  -- setup some paths
-  -- and start the application
+# create a minimal require.js configuration file
+  - set up base url
+  - setup some paths
+  - and start the application
 
-- change index.html to start require.js application
+# change index.html to start require.js application
 
-- test your app
+# test your app
