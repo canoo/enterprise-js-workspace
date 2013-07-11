@@ -1,5 +1,15 @@
+Setup
+=====
+
+1. Run npm install to
+
+```bash
+ npm install
+```
+
+
 Exercise 1 - Require.js
-======================
+=======================
 
 1. create a reasonable folder structure for your project
   - src/app/controller
