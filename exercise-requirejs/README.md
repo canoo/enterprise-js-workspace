@@ -1,19 +1,19 @@
 Setup
 =====
 
-1. Install all required node libraries to set up the project
+## Install all required node libraries to set up the project
 
 ```bash
     npm install
 ```
 
-2. Check if you can clean and build the project with grunt
+## Check if you can clean and build the project with grunt
 
 ```bash
 grunt clean build
 ```
 
-3. Open the index.html file within your build/ folder
+## Open the index.html file within your build/ folder
 
 Exercise 1 - Require.js
 =======================
