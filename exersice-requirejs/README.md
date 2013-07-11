@@ -1,4 +1,4 @@
-Exercise 1 - Rquire.js
+Exercise 1 - Require.js
 ======================
 
 1. create a folder reasonable folder structure
