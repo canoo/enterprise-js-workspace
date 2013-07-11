@@ -4,7 +4,7 @@ Setup
 Install all required node libraries to set up the project
 
 ```bash
-    npm install
+npm install
 ```
 
 Check if you can clean and build the project with grunt
