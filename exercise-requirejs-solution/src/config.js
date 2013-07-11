@@ -1,10 +1,10 @@
 require.config({
     baseUrl: 'app',
     paths  : {
-        main: '../main'
+        'app': '../app'
     },
     shims  : {}
 });
 
 // run the app
-require(['main']);
+require(['app']);
