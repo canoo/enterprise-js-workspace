@@ -15,10 +15,10 @@ WebKit Browser
 1. Installation
 ---------------
 
-	* Install Node.js http://nodejs.org/dist
-	* Now you should have the npm command line tool available
+1.1 Install Node.js http://nodejs.org/dist
+    Now you should have the npm command line tool available
 
-* Install Grunt.js command line tool with npm
+1.2 Install Grunt.js command line tool with npm
 
 ```
 npm install -g grunt-cli
