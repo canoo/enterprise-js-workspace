@@ -1,46 +1,46 @@
-Exersices
-=========
+# Exersices
+===========
 
 This project contains workshop related exercises
 
-Prerequisites
----------------
-Node.js http://nodejs.org
-Grunt.js http://gruntjs.com
-Buster.js http://busterjs.org
-Bower.js http://bower.io
-Compass http://www.compass-style.org
-WebKit Browser
 
 1. Installation
 ---------------
 
-1.1 Node
---------
+1.1 Node.js
+-----------
 
 Install Node.js from http://nodejs.org
-Now you should have the npm command line tool available
+Now you should have the npm (node package manager) command line tool available
 
 1.2 Grunt
 ---------
 
-Install Grunt.js command line tool with npm
+Install Grunt.js command line tool globally using npm
 
 ```
 npm install -g grunt-cli
 ```
 
-* Install Bower.js with npm
+1.3 Bower
+---------
+
+Install Bower.js globally using npm
 
 ```
 npm install -g bower
 ```
 
-* Install Buster.js with npm
+1.4 Buster.js
+-------------
+
+Install Buster.js globally using npm
 
 ```
 npm install -g buster
 ```
+
+1.5 Phantom.js
 
 * To run the Buster.js tests in a headless browser Install Phantomjs http://phantomjs.org
 * Make sure you have Ruby installed on your machine. Use Ruby package manager gem to install compass
