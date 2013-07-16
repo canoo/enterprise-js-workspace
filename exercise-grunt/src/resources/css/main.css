@@ -58,3 +58,7 @@ ul li {
 ul li:hover {
     background-color: lightblue;
 }
+
+ul li:focus {
+    outline: none;
+}
