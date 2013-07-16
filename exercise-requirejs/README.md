@@ -1,22 +1,5 @@
-Setup
-=====
-
-Install all required node libraries to set up the project
-
-```bash
-npm install
-```
-
-Check if you can clean and build the project with grunt
-
-```bash
-grunt clean build
-```
-
-Open the index.html file within your build/ folder
-
-Exercise 1 - Require.js
-=======================
+Exercise - Require.js
+=====================
 
 1. create a reasonable folder structure for your project
   - src/app/controller
