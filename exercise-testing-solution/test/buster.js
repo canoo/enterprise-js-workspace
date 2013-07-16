@@ -4,8 +4,6 @@ config["Browser Tests"] = {
     rootPath   : "..",
     environment: "browser", // or "node"
 
-    autoRun: false,
-
     extensions: [
         require("buster-amd")
     ],
