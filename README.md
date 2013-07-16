@@ -4,8 +4,8 @@
 This project contains workshop related exercises
 
 
-1. Installation
----------------
+1. Environment Setup
+--------------------
 
 1.1 Node.js
 -----------
@@ -41,50 +41,47 @@ npm install -g buster
 ```
 
 1.5 Phantom.js
+--------------
 
-* To run the Buster.js tests in a headless browser Install Phantomjs http://phantomjs.org
-* Make sure you have Ruby installed on your machine. Use Ruby package manager gem to install compass
+To To run the Buster.js tests in a headless browser install the WebKit headless browser Phantom.js from http://phantomjs.org
+
+1.6 Compass
+-----------
+
+Make sure you have Ruby installed on your machine. Use Ruby package manager gem to install compass
 
 ```
 gem update --system
 gem install compass
 ```
 
-* Checkout the sources:
+2.0 Project setup
+-----------------
 
 ```
-git clone some url
-git clone some url
+git clone TODO INPUT URL
 ```
 
-* Go to root directory and install missing npm and bower dependencies:
+2.1 Node Dependencies
+---------------------
+
+* Go to root directory of your project 
+* Make sure a package.json file is available there
+* Install missing npm and bower dependencies:
 
 ```
 npm install
+```
+
+2.2 Bower Dependencies
+----------------------
+
+* Go to root directory of your project 
+* Make sure a bower.json file is available there
+* Install missing bower dependencies:
+
+```
 bower install
 ```
-
-2. Grunt Tasks
---------------
-To build the project run
-
-```
-grunt build
-```
-this will create a 'build' folder, minify all JavaScript source files, generate CSS files using compass, compile handlebars templates and copy all other relevant resources.
-
-To run the buster test suite run
-
-```
-grunt test
-```
-
-Very useful during development
-
-```
-grunt watch
-```
-this will watch all resources like HTML templates, sass files, test files etc. and run a appropriate grunt task to process the resource.
-
 
 Now open the src/index.html and you should see the application.
