@@ -15,8 +15,8 @@ WebKit Browser
 1. Installation
 ---------------
 
-* Install Node.js (0.8.x) http://nodejs.org/dist
-Now you should have the npm command line tool available
+	* Install Node.js http://nodejs.org/dist
+	* Now you should have the npm command line tool available
 
 * Install Grunt.js command line tool with npm
 
