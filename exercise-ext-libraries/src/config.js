@@ -1,7 +1,8 @@
 require.config({
     baseUrl: 'app',
     paths  : {
-        'app': '../app'
+        'app'   : '../app',
+        'moment': '../scripts/moment/moment'
     },
     shims  : {}
 });

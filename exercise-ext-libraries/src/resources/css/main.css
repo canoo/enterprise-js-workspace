@@ -59,6 +59,15 @@ ul li:hover {
     background-color: lightblue;
 }
 
-ul li:focus {
+ul li div:focus {
     outline: none;
+}
+
+ul li div:first-child {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+ul li div.item-date {
+    color: lightslategrey;
 }
