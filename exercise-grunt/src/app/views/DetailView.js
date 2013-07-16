@@ -33,11 +33,7 @@ define(function() {
 
     View.prototype.render = function(context) {
         var html = this.template(context);
-
-        while (this.el.firstChild) {
-            this.el.removeChild(this.el.firstChild);
-        }
-
+        this.el.innerHTML = "";
         this.el.appendChild(html);
     };
 
