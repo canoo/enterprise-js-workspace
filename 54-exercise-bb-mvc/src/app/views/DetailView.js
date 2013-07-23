@@ -13,12 +13,11 @@ define([
         template: Handlebars.compile(detailTemplate),
 
         events: {
-            "blur .item-name": "onItemFocusLost",
-            "click .item-delete": "onItemDelete"
+            "blur .item-name": "onItemFocusLost"
         },
 
         initialize: function() {
-            this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(this.collection, 'change add', this.render);
         },
 
         render: function() {
@@ -32,19 +31,10 @@ define([
         onItemFocusLost: function(event) {
             var $target = $(event.target);
             var value = $target.html();
-            var index = $target.parent().data("index");
+            var index = $target.data("index");
 
             this.trigger("change:item", {
                 value: value,
-                index: index
-            });
-        },
-
-        onItemDelete: function(event) {
-            var $target = $(event.target);
-            var index = $target.parent().data("index");
-
-            this.trigger("delete:item", {
                 index: index
             });
         }

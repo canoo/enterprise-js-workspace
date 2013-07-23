@@ -21,7 +21,6 @@ define([
 
             this.listenTo(this.inputView, "add", this.onNoteAdd);
             this.listenTo(this.detailView, "change:item", this.onNoteChange);
-            this.listenTo(this.detailView, "delete:item", this.onNoteDelete);
         },
 
         onNoteAdd: function(item) {
@@ -34,11 +33,6 @@ define([
                 name: event.value,
                 date: new Date()
             });
-        },
-
-        onNoteDelete: function(event) {
-            var model = this.collection.at(event.index);
-            model.destroy();
         }
 
     });
