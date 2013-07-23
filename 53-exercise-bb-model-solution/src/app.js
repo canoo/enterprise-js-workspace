@@ -1,7 +1,7 @@
 define([
 
     '$',
-    'model/Note'
+    'models/Note'
 
 ], function($, Note){
 
