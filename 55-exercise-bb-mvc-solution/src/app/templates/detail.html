@@ -2,7 +2,7 @@
     {{#each notes}}
     <li>
         <div class="item-name" data-index="{{@index}}" contenteditable="true">{{name}}</div>
-        <div class="item-date">{{date date}}</div>
+        <div class="item-date">{{prettyDate date format='HH:mm:ss'}}</div>
     </li>
     {{/each}}
 </ul>

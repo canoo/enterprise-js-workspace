@@ -4,8 +4,9 @@ define([
 ], function(moment,
             Handlebars) {
 
-    Handlebars.registerHelper('date', function(date, url) {
-        return moment(date).format('HH:mm:ss');
+    Handlebars.registerHelper('prettyDate', function(date, options) {
+        var format = options.hash.format || 'HH:mm:ss';
+        return moment(date).format(format);
     });
 
 });
