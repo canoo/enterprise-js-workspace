@@ -71,3 +71,7 @@ ul li div:first-child {
 ul li div.item-date {
     color: lightslategrey;
 }
+
+ul li div.item-delete {
+    color: #8b0000;
+}
