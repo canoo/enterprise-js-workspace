@@ -5,6 +5,7 @@ require.config({
         'handlebars': '../scripts/handlebars/handlebars',
         'backbone': '../scripts/backbone/backbone',
         'jquery': '../scripts/jquery/jquery',
+        'text': '../scripts/requirejs/text',
         'underscore': '../scripts/underscore/underscore'
     },
 

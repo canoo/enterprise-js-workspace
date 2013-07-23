@@ -1,61 +1,51 @@
-define(function() {
+define([
+    '$',
+    '_',
+    'backbone',
+    'handlebars',
+    'text!templates/input.html'
+], function($, _, Backbone,
+            Handlebars,
+            inputTemplate) {
 
-    var View = function(el){
-        this.el = el || document.body;
-        this.initialize();
-    };
+    var InputView = Backbone.View.extend({
 
-    View.prototype.initialize = function() {
-        this.label = document.createElement('label');
-        this.label.innerHTML = 'Input';
-        this.label.for = 'input';
+        template: Handlebars.compile(inputTemplate),
 
-        this.input = document.createElement('input');
-        this.input.id = 'input';
-        this.input.type = 'input';
+        events: {
+            "click button": "onAddClicked",
+            "keyup #input": "onEnterPressed"
+        },
 
-        this.button = document.createElement('button');
-        this.button.innerHTML = "Add";
-    };
+        render: function() {
+            var html = this.template();
+            this.$el.html(html);
+        },
 
-    View.prototype._clearView = function() {
-        while (this.el.lastChild) {
-            this.el.removeChild(this.el.lastChild);
-        }
-    };
-
-    View.prototype.render = function() {
-
-        this._clearView();
-
-        this.el.appendChild(this.label);
-        this.el.appendChild(this.input);
-        this.el.appendChild(this.button);
-    };
-
-    View.prototype.addClickListener = function(listener) {
-        var me = this;
-        this.button.addEventListener('click', function () {
-            if(me.input.value) {
-                listener(me.input.value);
-                me.input.value = "";
+        notifyAdd: function () {
+            var $input = this.$('#input');
+            var name = $input.val();
+            if (name) {
+                this.trigger("add", {
+                    name: name
+                });
+                $input.html('');
             }
-        });
-    };
+        },
 
-    View.prototype.addKeyListener = function(listener) {
-        var me = this;
-        this.input.addEventListener('keyup', function (event) {
+        onAddClicked: function(event) {
+            this.notifyAdd();
+        },
+
+        onEnterPressed: function(event) {
             if(event.keyCode == 13) {
-                if(me.input.value) {
-                    listener(me.input.value);
-                    me.input.value = "";
-                }
+                this.notifyAdd();
             }
-        });
-    };
+        }
 
-    return View;
+    });
+
+    return InputView;
 
 });
 

@@ -1,34 +1,39 @@
-define(function () {
+define([
+    // Libs
+    '_',
+    'backbone',
+    'models/Note'
+], function (_, Backbone,
+        Note) {
 
-    var Controller = function(options){
-        this.inputView = options.input;
-        this.detailView = options.detail;
-        this.model = options.model;
-
+    var Controller = function (options) {
+        this.inputView = options.inputView;
+        this.detailView = options.detailView;
+        this.collection = options.collection;
         this.initialize();
     };
 
-    Controller.prototype.initialize = function() {
-        var me = this;
+    _.extend(Controller.prototype, Backbone.Events, {
 
-        // add enter key listener
-        this.inputView.addKeyListener(function (input) {
-            me.model.addItem({name: input});
-            me.detailView.render({ items: me.model.getItems() });
-        });
+        initialize: function() {
+            this.inputView.render();
+            this.detailView.render();
 
-        // add button click listener
-        this.inputView.addClickListener(function (input) {
-            me.model.addItem({name: input});
-            me.detailView.render({ items: me.model.getItems() });
-        });
+            this.listenTo(this.inputView, "add", this.addNote);
+            this.listenTo(this.detailView, "change:item", this.noteChanged);
+        },
 
-        // add button click listener
-        this.detailView.addChangeListener(function (value, index) {
-            me.model.updateItem({name: value}, index);
-            me.detailView.render({ items: me.model.getItems() });
-        });
-    };
+        addNote: function(item) {
+            this.collection.add(new Note(item));
+        },
+
+        noteChanged: function(event) {
+            var model = this.collection.at(event.index);
+            model.set("name", event.value);
+        }
+
+    });
 
     return Controller;
+
 });

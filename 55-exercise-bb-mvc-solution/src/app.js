@@ -1,24 +1,29 @@
 define([
 
-    'models/Model',
+    'models/Notes',
     'views/InputView',
     'views/DetailView',
     'controller/Controller'
 
-], function(Model, InputView, DetailView, Controller){
+], function(Notes, InputView, DetailView, Controller){
 
-    var inputEl = document.getElementById('input');
-    var detailEl = document.getElementById('detail');
+    return {
+        start: function() {
 
-    var model = new Model();
-    var detailView = new DetailView(detailEl);
-    var inputView = new InputView(inputEl);
+            var notes = new Notes();
+            var inputView = new InputView({ el: '#input' });
+            var detailView = new DetailView({
+                el: '#detail',
+                collection: notes
+            });
 
-    inputView.render();
+            var controller = new Controller({
+                inputView : inputView,
+                detailView: detailView,
+                collection : notes
+            });
 
-    var controller = new Controller({
-        input : inputView,
-        detail: detailView,
-        model : model
-    });
+        }
+    }
+
 });

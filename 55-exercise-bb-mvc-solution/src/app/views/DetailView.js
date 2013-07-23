@@ -1,43 +1,47 @@
-define(function() {
-    var template = function(context) {
-        context = context || {};
-        var items = context.items || [];
+define([
+    '$',
+    '_',
+    'backbone',
+    'handlebars',
+    'text!templates/detail.html'
+], function($, _, Backbone,
+            Handlebars,
+            detailTemplate) {
 
-        var list = document.createElement('ul');
+    var DetailView = Backbone.View.extend({
 
-        items.forEach(function (item, index) {
-            var listItem = document.createElement('li');
-            listItem.innerHTML = item.name;
-            listItem.dataset.index = index;
-            listItem.contentEditable = true;
-            listItem.onblur = this.changeListener;
-            list.appendChild(listItem);
-        }, this);
+        template: Handlebars.compile(detailTemplate),
 
-        return list;
-    };
+        events: {
+            "blur li[data-index]": "onItemFocusLost"
+        },
 
-    var View = function(el, tpl){
-        this.el = el || document.body;
-        this.template = (tpl || template).bind(this);
-    };
+        initialize: function() {
+            this.listenTo(this.collection, 'change add', this.render);
+        },
 
-    View.prototype.addChangeListener = function(listener) {
-        this.changeListener = function(event) {
-            var target = event.target;
-            var value = target.innerHTML;
-            var index = target.dataset.index;
-            listener(value, index);
+        render: function() {
+            var viewModel = this.collection.toJSON();
+            var html = this.template({
+                notes: viewModel
+            });
+            this.$el.html(html);
+        },
+
+        onItemFocusLost: function(event) {
+            console.log(event);
+            var $target = $(event.target);
+            var value = $target.html();
+            var index = $target.data("index");
+
+            this.trigger("change:item", {
+                value: value,
+                index: index
+            });
         }
-    };
 
-    View.prototype.render = function(context) {
-        var html = this.template(context);
-        this.el.innerHTML = "";
-        this.el.appendChild(html);
-    };
+    });
 
-
-    return View;
+    return DetailView;
 
 });
