@@ -29,7 +29,10 @@ define([
 
         noteChanged: function(event) {
             var model = this.collection.at(event.index);
-            model.set("name", event.value);
+            model.set({
+                name: event.value,
+                date: new Date()
+            });
         }
 
     });

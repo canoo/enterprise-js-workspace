@@ -1,15 +1,20 @@
 define([
 
     'models/Notes',
+
     'views/InputView',
     'views/DetailView',
-    'controller/Controller'
 
-], function(Notes, InputView, DetailView, Controller){
+    'controller/Controller',
+
+    'templates/HandlebarsDateHelper'
+
+], function(Notes,
+            InputView, DetailView,
+            Controller){
 
     return {
         start: function() {
-
             var notes = new Notes();
             var inputView = new InputView({ el: '#input' });
             var detailView = new DetailView({

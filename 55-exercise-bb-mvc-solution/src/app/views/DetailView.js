@@ -13,7 +13,7 @@ define([
         template: Handlebars.compile(detailTemplate),
 
         events: {
-            "blur li[data-index]": "onItemFocusLost"
+            "blur .item-name": "onItemFocusLost"
         },
 
         initialize: function() {
@@ -29,7 +29,6 @@ define([
         },
 
         onItemFocusLost: function(event) {
-            console.log(event);
             var $target = $(event.target);
             var value = $target.html();
             var index = $target.data("index");

@@ -6,7 +6,8 @@ require.config({
         'backbone': '../scripts/backbone/backbone',
         'jquery': '../scripts/jquery/jquery',
         'text': '../scripts/requirejs/text',
-        'underscore': '../scripts/underscore/underscore'
+        'underscore': '../scripts/underscore/underscore',
+        'moment': '../scripts/moment/moment'
     },
 
     shim: {
