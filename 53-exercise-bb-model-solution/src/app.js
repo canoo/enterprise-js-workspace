@@ -1,20 +1,18 @@
 define([
 
     '$',
-    'views/SampleView'
+    'model/Note'
 
-], function($, SampleView){
+], function($, Note){
 
     return {
         start: function() {
-            var sampleView = new SampleView({ data: { text: "Hello here"} });
-            sampleView.render();
-
-            sampleView.on("view:clicked", function() {
-                alert("View clicked!");
+            var model = new Note({
+                name: 'my personal note'
             });
 
-            $("body").append(sampleView.el);
+            // watch the console!
+            console.log(model.toJSON());
         }
     }
 
