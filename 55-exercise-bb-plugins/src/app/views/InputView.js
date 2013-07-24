@@ -2,34 +2,25 @@ define([
     '$',
     '_',
     'backbone',
-    'handlebars',
-    'text!templates/input.html'
-], function($, _, Backbone,
-            Handlebars,
-            inputTemplate) {
+], function($, _, Backbone) {
 
     var InputView = Backbone.View.extend({
 
-        template: Handlebars.compile(inputTemplate),
+        template: 'input',
 
         events: {
             "click button": "onAddClicked",
             "keyup #input": "onEnterPressed"
         },
 
-        render: function() {
-            var html = this.template();
-            this.$el.html(html);
-        },
-
         notifyAdd: function () {
             var $input = this.$('#input');
             var name = $input.val();
             if (name) {
-                this.trigger("add", {
+                this.trigger("item:add", {
                     name: name
                 });
-                $input.html('');
+                $input.val('');
             }
         },
 

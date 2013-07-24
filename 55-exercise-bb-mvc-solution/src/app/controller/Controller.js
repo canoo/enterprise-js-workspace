@@ -19,9 +19,9 @@ define([
             this.inputView.render();
             this.detailView.render();
 
-            this.listenTo(this.inputView, "add", this.onNoteAdd);
-            this.listenTo(this.detailView, "change:item", this.onNoteChange);
-            this.listenTo(this.detailView, "delete:item", this.onNoteDelete);
+            this.listenTo(this.inputView, "item:add", this.onNoteAdd);
+            this.listenTo(this.detailView, "item:change", this.onNoteChange);
+            this.listenTo(this.detailView, "item:delete", this.onNoteDelete);
         },
 
         onNoteAdd: function(item) {

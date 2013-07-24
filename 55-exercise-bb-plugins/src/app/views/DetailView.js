@@ -1,50 +1,52 @@
 define([
     '$',
     '_',
-    'backbone',
-    'handlebars',
-    'text!templates/detail.html'
-], function($, _, Backbone,
-            Handlebars,
-            detailTemplate) {
+    'backbone'
+
+    // No HBS includes and template imports required
+
+], function ($, _, Backbone) {
 
     var DetailView = Backbone.View.extend({
 
-        template: Handlebars.compile(detailTemplate),
+        // templates are referenced by name
+        template: 'detail',
 
         events: {
-            "blur .item-name": "onItemFocusLost",
+            "blur .item-name"   : "onItemFocusLost",
             "click .item-delete": "onItemDelete"
         },
 
-        initialize: function() {
+        initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
         },
 
-        render: function() {
-            var viewModel = this.collection.toJSON();
-            var html = this.template({
-                notes: viewModel
-            });
-            this.$el.html(html);
+        // No render method required
+        // render: function() { },
+
+        // serialize method to pass data to the template
+        serialize: function () {
+            return {
+                notes: this.collection.toJSON()
+            };
         },
 
-        onItemFocusLost: function(event) {
+        onItemFocusLost: function (event) {
             var $target = $(event.target);
             var value = $target.html();
             var index = $target.parents('[data-index]').data("index");
 
-            this.trigger("change:item", {
+            this.trigger("item:change", {
                 value: value,
                 index: index
             });
         },
 
-        onItemDelete: function(event) {
+        onItemDelete: function (event) {
             var $target = $(event.target);
             var index = $target.parents('[data-index]').data("index");
 
-            this.trigger("delete:item", {
+            this.trigger("item:delete", {
                 index: index
             });
         }

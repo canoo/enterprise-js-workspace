@@ -34,7 +34,7 @@ define([
             var value = $target.html();
             var index = $target.parents('[data-index]').data("index");
 
-            this.trigger("change:item", {
+            this.trigger("item:change", {
                 value: value,
                 index: index
             });
@@ -44,7 +44,7 @@ define([
             var $target = $(event.target);
             var index = $target.parents('[data-index]').data("index");
 
-            this.trigger("delete:item", {
+            this.trigger("item:delete", {
                 index: index
             });
         }

@@ -26,10 +26,10 @@ define([
             var $input = this.$('#input');
             var name = $input.val();
             if (name) {
-                this.trigger("add", {
+                this.trigger("item:add", {
                     name: name
                 });
-                $input.html('');
+                $input.val('');
             }
         },
 

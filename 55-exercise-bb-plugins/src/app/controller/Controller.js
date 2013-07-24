@@ -3,12 +3,10 @@ define([
     '_',
     'backbone',
     'models/Note'
-], function (_, Backbone,
-        Note) {
+], function (_, Backbone, Note) {
 
     var Controller = function (options) {
-        this.inputView = options.inputView;
-        this.detailView = options.detailView;
+        this.mainView = options.mainView;
         this.collection = options.collection;
         this.initialize();
     };
@@ -16,12 +14,11 @@ define([
     _.extend(Controller.prototype, Backbone.Events, {
 
         initialize: function() {
-            this.inputView.render();
-            this.detailView.render();
 
-            this.listenTo(this.inputView, "add", this.onNoteAdd);
-            this.listenTo(this.detailView, "change:item", this.onNoteChange);
-            this.listenTo(this.detailView, "delete:item", this.onNoteDelete);
+            // events from child views are propagated to parent views
+            this.listenTo(this.mainView, "item:add", this.onNoteAdd);
+            this.listenTo(this.mainView, "item:change", this.onNoteChange);
+            this.listenTo(this.mainView, "item:delete", this.onNoteDelete);
         },
 
         onNoteAdd: function(item) {

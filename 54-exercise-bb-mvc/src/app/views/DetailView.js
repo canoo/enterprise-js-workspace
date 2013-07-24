@@ -33,7 +33,7 @@ define([
             var value = $target.html();
             var index = $target.data("index");
 
-            this.trigger("change:item", {
+            this.trigger("item:change", {
                 value: value,
                 index: index
             });
