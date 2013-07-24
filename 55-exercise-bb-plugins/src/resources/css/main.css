@@ -7,12 +7,12 @@ body {
 }
 
 label {
-    margin-right: 10px;
-    margin-left: 10px;
+    margin-right: 5px;
 }
 
 input {
-    padding: 5px;
+    padding: 6px;
+    height: 30px;
     border: 1px solid gainsboro;
     border-radius: 2px;
     color: #333;
@@ -33,7 +33,6 @@ input:focus {
     box-shadow: 0px 0px 5px #a3bacd;
 }
 
-
 ul {
     list-style: none;
     text-align: left;
@@ -44,7 +43,7 @@ ul li {
     background-color: lightgray;
     border-radius: 4px;
     margin: 5px 0px;
-    padding: 13px 10px;
+    padding: 15px 10px;
     min-height: 50px;
     font-size: 24px;
 
@@ -118,8 +117,58 @@ ul li div.item-delete {
 
 ul li div.item-delete:hover {
     background: grey;
+}
 
+button {
 
+    -moz-box-shadow: 0px 1px 0px 0px #ffffff;
+    -webkit-box-shadow: 0px 1px 0px 0px #ffffff;
+    box-shadow: 0px 1px 0px 0px #ffffff;
 
+    background: -webkit-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+    background: -moz-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+    background: -ms-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+    background: linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
 
+    background-color: #ffffff;
+
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+
+    height: 31px;
+
+    border: 1px solid #dcdcdc;
+
+    color: #666666;
+    /*font-family: Helvetia;*/
+    font-size: 1em;
+    padding: 4px 10px;
+    text-decoration: none;
+
+    text-shadow: 0px 1px 0px #ffffff;
+
+}
+
+button:hover {
+
+    background: -webkit-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+    background: -moz-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+    background: -ms-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+    background: linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
+
+    background-color: #f6f6f6;
+}
+
+button:active {
+    background: -webkit-linear-gradient(top, #f6f6f6 5%, #dcdcdc 100%);
+    background: -moz-linear-gradient(top, #f6f6f6 5%, #dcdcdc 100%);
+    background: -ms-linear-gradient(top, #f6f6f6 5%, #dcdcdc 100%);
+    background: linear-gradient(to bottom, #f6f6f6 5%, #dcdcdc 100%);
+
+    background-color: #f6f6f6;
+}
+
+.input-view {
+    /*padding: 15px 10px;*/
 }

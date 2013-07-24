@@ -7,7 +7,7 @@ define(function() {
 
     View.prototype.initialize = function() {
         this.label = document.createElement('label');
-        this.label.innerHTML = 'Input';
+        this.label.innerHTML = 'Note';
         this.label.for = 'input';
 
         this.input = document.createElement('input');
