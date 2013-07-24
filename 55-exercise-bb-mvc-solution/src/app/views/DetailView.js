@@ -32,7 +32,7 @@ define([
         onItemFocusLost: function(event) {
             var $target = $(event.target);
             var value = $target.html();
-            var index = $target.parent().data("index");
+            var index = $target.parents('[data-index]').data("index");
 
             this.trigger("change:item", {
                 value: value,
@@ -42,7 +42,7 @@ define([
 
         onItemDelete: function(event) {
             var $target = $(event.target);
-            var index = $target.parent().data("index");
+            var index = $target.parents('[data-index]').data("index");
 
             this.trigger("delete:item", {
                 index: index

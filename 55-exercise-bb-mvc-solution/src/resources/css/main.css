@@ -65,13 +65,61 @@ ul li div:focus {
 
 ul li div:first-child {
     margin-bottom: 10px;
-    width: 100%;
+    /*width: 100%;*/
+}
+
+.hbox {
+    display: box;
+    display: -moz-box;
+    display: -ms-box;
+    display: -webkit-box;
+
+    box-orient: horizontal;
+
+    box-pack: center;
+    -webkit-box-pack: center;
+
+    box-align: center;
+    -webkit-box-align: center;
 }
 
 ul li div.item-date {
     color: lightslategrey;
 }
 
+.main-flex {
+    box-flex: 1;
+    -moz-box-flex: 1;
+    -ms-box-flex: 1;
+    -webkit-box-flex: 1;
+}
+
 ul li div.item-delete {
-    color: #8b0000;
+
+    height: 1.5em;
+    width: 1.5em;
+
+    color: lightgrey;
+    background: darkgrey;
+
+    border-radius: 100%;
+    -moz-border-radius: 100%;
+    -ms-border-radius: 100%;
+    -webkit-border-radius: 100%;
+
+    cursor: pointer;
+
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -ms-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+}
+
+ul li div.item-delete:hover {
+    background: grey;
+
+
+
+
 }

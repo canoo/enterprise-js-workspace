@@ -1,9 +1,11 @@
 <ul>
     {{#each notes}}
-    <li data-index="{{@index}}">
-        <div class="item-name" contenteditable="true">{{name}}</div>
-        <div class="item-date">{{prettyDate date format='HH:mm:ss'}}</div>
-        <div class="item-delete">DELETE</div>
+    <li data-index="{{@index}}" class="hbox">
+        <div class="main-flex">
+            <div class="item-name" contenteditable="true">{{name}}</div>
+            <div class="item-date">{{prettyDate date format='HH:mm:ss'}}</div>
+        </div>
+        <div class="item-delete hbox"><span class="close-x">x</span></div>
     </li>
     {{/each}}
 </ul>
