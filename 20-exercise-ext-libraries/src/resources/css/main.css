@@ -54,6 +54,10 @@ ul li {
     transition: all 0.3s ease-out;
 }
 
+ul li:focus {
+    outline: none;
+}
+
 ul li:hover {
     background-color: lightblue;
 }
