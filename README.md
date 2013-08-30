@@ -1,8 +1,6 @@
-# Exersices
-===========
+# Enterprise JS Workshop Workspace
 
 This project contains workshop related exercises
-
 
 1. Environment Setup
 --------------------
@@ -59,29 +57,21 @@ gem install compass
 -----------------
 
 ```
-git clone TODO INPUT URL
+git clone https://github.com/canoo/enterprise-js-workspace.git
 ```
 
-2.1 Node Dependencies
----------------------
+# Exercises
 
-* Go to root directory of your project 
-* Make sure a package.json file is available there
-* Install missing npm and bower dependencies:
+This workshop contains following exercises
 
-```
-npm install
-```
+#### [Require JS] [1]
+#### [Buster JS] [2]
+#### [Backbone JS - Views] [3]
+#### [Backbone JS - Models] [4]
+#### [Backbone JS - MVC] [5]
 
-2.2 Bower Dependencies
-----------------------
-
-* Go to root directory of your project 
-* Make sure a bower.json file is available there
-* Install missing bower dependencies:
-
-```
-bower install
-```
-
-Now open the src/index.html and you should see the application.
+  [1]: https://github.com/canoo/enterprise-js-workspace/tree/master/10-exercise-requirejs     "Require JS"
+  [2]: https://github.com/canoo/enterprise-js-workspace/tree/master/30-exercise-testing       "Buster JS"
+  [3]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-view         "Backbone Views"
+  [4]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-model         "Backbone Model"
+  [5]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-mvc         "Backbone MVC"
