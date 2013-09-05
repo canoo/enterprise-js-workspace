@@ -1,5 +1,5 @@
-Backbone Views
-==============
+Backbone View
+=============
 
 In this exercise we will implement a simple [Backbone][2] view using [Handlebars][1] templating.
 The view will react to a click event and will fire an application event.
