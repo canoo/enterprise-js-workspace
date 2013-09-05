@@ -1,0 +1,7 @@
+{
+  "name": "30-exercise-testing-solution",
+  "version": "1.0.0",
+  "dependencies": {
+    "buster-amd": "~0.3.0"
+  }
+}
