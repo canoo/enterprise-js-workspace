@@ -1,6 +1,8 @@
 Exercise - testing
 ==================
 
+In this exercise you will run a Buster.JS server, setup some Buster.JS slaves and execute some test cases.
+
 Setup
 =====
 
