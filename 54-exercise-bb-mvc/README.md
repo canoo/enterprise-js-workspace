@@ -6,7 +6,7 @@ In this exercise you will implement a "Delete" action for our note items.
 Controller
 ==========
 
-1. Implement a delete action method on the notes Controller which will receive the note model index
+1. Implement a delete action method on the notes Controller which will receive the note model index within the notes collection
 
     ```JavaScript
       onNoteDelete: function (event) {
@@ -32,7 +32,7 @@ Controller
 DetailView
 ==========
 
-1. Add a div element to the DetailView handlebars template which will act as a button to trigger the delete action eg.
+1. Add a div element to the DetailView handlebars template which will act as a button to trigger the delete action e.g.
 
 
     ```HTML
@@ -57,4 +57,3 @@ DetailView
     ```
 
 
-[1]: http://backbonejs.org     "Backbone"
