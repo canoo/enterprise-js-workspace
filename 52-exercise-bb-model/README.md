@@ -1,7 +1,7 @@
 Exercise - Backbone Model
 =========================
 
-1. Implement a Note Backbone model
+1. Implement a Note [Backbone][1] model
   - defaults:
     - name field: empty string
     - date field: date of construction
@@ -72,3 +72,5 @@ Exercise - Backbone Model
   
   assert.calledOnceWith(spy, updateModel, "updated name");
   ```
+
+[1]: http://backbonejs.org     "Backbone"
