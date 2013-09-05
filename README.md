@@ -51,6 +51,16 @@ npm install -g buster
 --------------
 
 In order to run the Buster.js tests in a headless browser install the WebKit headless browser [Phantom.js][11] from http://phantomjs.org
+Make sure that __$PHANTOMJS_HOME__ environment variable is set correctly and __$PHANTOMJS_HOME/bin__ is added to your __$PATH__ environment variable.
+
+1.7 HTTP Server
+---------------
+
+It is very handy to have a simple http server right at your finger tips.
+
+```
+npm install -g http-server
+```
 
 ---
 
