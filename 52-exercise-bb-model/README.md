@@ -1,5 +1,5 @@
-Exercise - backbone models
-==========================
+Exercise - Backbone Model
+=========================
 
 1. Implement a Note Backbone model
   - defaults:
