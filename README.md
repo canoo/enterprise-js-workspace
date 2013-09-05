@@ -43,15 +43,6 @@ npm install -g buster
 
 To To run the Buster.js tests in a headless browser install the WebKit headless browser Phantom.js from http://phantomjs.org
 
-1.6 Compass
------------
-
-Make sure you have Ruby installed on your machine. Use Ruby package manager gem to install compass
-
-```
-gem update --system
-gem install compass
-```
 
 2.0 Project setup
 -----------------
@@ -72,6 +63,6 @@ This workshop contains following exercises
 
   [1]: https://github.com/canoo/enterprise-js-workspace/tree/master/10-exercise-requirejs     "Require JS"
   [2]: https://github.com/canoo/enterprise-js-workspace/tree/master/30-exercise-testing       "Buster JS"
-  [3]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-view         "Backbone Views"
-  [4]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-model         "Backbone Model"
-  [5]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-mvc         "Backbone MVC"
+  [3]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-view       "Backbone Views"
+  [4]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-model      "Backbone Model"
+  [5]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-mvc        "Backbone MVC"
