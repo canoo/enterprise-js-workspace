@@ -15,6 +15,7 @@ Install a [Git][6] client for your machine.
 -----------
 
 Install [Node.js][7] from http://nodejs.org
+
 Now you should have the npm (node package manager) command line tool available
 
 1.3 Grunt
