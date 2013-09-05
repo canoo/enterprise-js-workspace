@@ -5,7 +5,9 @@ This project contains workshop related exercises
 1. Environment Setup
 --------------------
 
-1.1 Git 
+_Note_: Some of the command line tools will be installed globally. For that you will probably need to run the command with ___super user permissions___.
+
+1.1 Git
 -------
 
 Install a [Git][6] client for your machine.
