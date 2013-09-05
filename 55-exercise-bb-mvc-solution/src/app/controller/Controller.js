@@ -3,8 +3,7 @@ define([
     '_',
     'backbone',
     'models/Note'
-], function (_, Backbone,
-        Note) {
+], function (_, Backbone, Note) {
 
     var Controller = function (options) {
         this.inputView = options.inputView;
@@ -15,7 +14,7 @@ define([
 
     _.extend(Controller.prototype, Backbone.Events, {
 
-        initialize: function() {
+        initialize: function () {
             this.inputView.render();
             this.detailView.render();
 
@@ -24,11 +23,11 @@ define([
             this.listenTo(this.detailView, "item:delete", this.onNoteDelete);
         },
 
-        onNoteAdd: function(item) {
+        onNoteAdd: function (item) {
             this.collection.add(new Note(item));
         },
 
-        onNoteChange: function(event) {
+        onNoteChange: function (event) {
             var model = this.collection.at(event.index);
             model.set({
                 name: event.value,
@@ -36,7 +35,7 @@ define([
             });
         },
 
-        onNoteDelete: function(event) {
+        onNoteDelete: function (event) {
             var model = this.collection.at(event.index);
             model.destroy();
         }

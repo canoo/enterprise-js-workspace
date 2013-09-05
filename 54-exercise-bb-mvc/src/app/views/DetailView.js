@@ -21,9 +21,9 @@ define([
         },
 
         render: function() {
-            var viewModel = this.collection.toJSON();
+            var notes = this.collection.toJSON();
             var html = this.template({
-                notes: viewModel
+                notes: notes
             });
             this.$el.html(html);
         },
@@ -31,14 +31,13 @@ define([
         onItemFocusLost: function(event) {
             var $target = $(event.target);
             var value = $target.html();
-            var index = $target.data("index");
+            var index = $target.parents('[data-index]').data("index");
 
             this.trigger("item:change", {
                 value: value,
                 index: index
             });
         }
-
     });
 
     return DetailView;

@@ -22,9 +22,9 @@ define([
         },
 
         render: function() {
-            var viewModel = this.collection.toJSON();
+            var notes = this.collection.toJSON();
             var html = this.template({
-                notes: viewModel
+                notes: notes
             });
             this.$el.html(html);
         },
@@ -43,10 +43,7 @@ define([
         onItemDelete: function(event) {
             var $target = $(event.target);
             var index = $target.parents('[data-index]').data("index");
-
-            this.trigger("item:delete", {
-                index: index
-            });
+            this.trigger("item:delete", { index: index });
         }
 
     });

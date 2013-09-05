@@ -1,7 +1,9 @@
 <ul>
     {{#each notes}}
-    <li>
-        <div class="item-name" data-index="{{@index}}" contenteditable="true">{{name}}</div>
+    {{! leave the index of each model inside the view }}
+    <li data-index="{{@index}}">
+        {{! leave the index of each model inside the view }}
+        <div class="item-name" contenteditable="true">{{name}}</div>
         <div class="item-date">{{prettyDate date format='HH:mm:ss'}}</div>
     </li>
     {{/each}}

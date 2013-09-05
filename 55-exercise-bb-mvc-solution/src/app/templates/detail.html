@@ -1,5 +1,6 @@
 <ul>
     {{#each notes}}
+    {{! leave the index of each model inside the view }}
     <li data-index="{{@index}}" class="hbox">
         <div class="main-flex">
             <div class="item-name" contenteditable="true">{{name}}</div>
