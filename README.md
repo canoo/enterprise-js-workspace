@@ -49,12 +49,15 @@ npm install -g buster
 
 In order to run the Buster.js tests in a headless browser install the WebKit headless browser [Phantom.js][11] from http://phantomjs.org
 
+---
 
-Now you should be ready to checkout and run the exersices.
+#### Now you should be ready to checkout and run the exersices.
 
 
 2.0 Project setup
 -----------------
+
+Checkout the source code using your git client.
 
 ```
 git clone https://github.com/canoo/enterprise-js-workspace.git
