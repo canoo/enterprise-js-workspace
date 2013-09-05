@@ -49,12 +49,11 @@ DetailView
         },
         ...
 
-         onItemDelete: function(event) {
+        onItemDelete: function(event) {
             var $target = $(event.target);
             var index = $target.parents('[data-index]').data("index");
             this.trigger("item:delete", { index: index });
-         }
-
+        }
     ```
 
 
