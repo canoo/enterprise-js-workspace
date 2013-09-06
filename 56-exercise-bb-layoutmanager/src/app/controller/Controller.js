@@ -25,6 +25,8 @@ define([
             this.listenTo(this.mainView, "item:add", this.onNoteAdd);
             this.listenTo(this.mainView, "item:change", this.onNoteChange);
             this.listenTo(this.mainView, "item:delete", this.onNoteDelete);
+
+            this.mainView.render();
         },
 
         onNoteAdd: function(item) {
