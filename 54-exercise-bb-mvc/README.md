@@ -51,7 +51,10 @@ DetailView
             "click .item-delete": "onItemDelete"
         },
         ...
-
+        initialize: function() {
+            this.listenTo(this.collection, 'change add delete', this.render);
+        },
+        ...
         onItemDelete: function(event) {
             var $target = $(event.target);
             var index = $target.parents('[data-index]').data("index");
