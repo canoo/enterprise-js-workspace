@@ -17,7 +17,9 @@ define([
             "click .item-delete": "onItemDelete"
         },
 
-        initialize: function () {
+        initialize: function (options) {
+            options = options || {};
+            this.parent = options.parent;
             this.listenTo(this.collection, 'all', this.render);
         },
 
@@ -25,7 +27,7 @@ define([
         // render: function() { },
 
         // serialize method to pass data to the template
-        serialize: function () {
+        serialize : function () {
             return {
                 notes: this.collection.toJSON()
             };
@@ -35,20 +37,30 @@ define([
             var $target = $(event.target);
             var value = $target.html();
             var index = $target.parents('[data-index]').data("index");
-
-            this.trigger("item:change", {
-                value: value,
-                index: index
-            });
+            this.notifyChange(index, value);
         },
 
         onItemDelete: function (event) {
             var $target = $(event.target);
             var index = $target.parents('[data-index]').data("index");
+            this.notifyDelete(index);
+        },
 
-            this.trigger("item:delete", {
-                index: index
-            });
+        notifyDelete: function (index) {
+            if (this.parent) {
+                this.parent.trigger("item:delete", {
+                    index: index
+                });
+            }
+        },
+
+        notifyChange: function (index, value) {
+            if (this.parent) {
+                this.parent.trigger("item:change", {
+                    index: index,
+                    value: value
+                });
+            }
         }
 
     });

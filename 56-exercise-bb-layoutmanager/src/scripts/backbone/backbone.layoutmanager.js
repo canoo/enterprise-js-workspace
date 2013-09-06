@@ -1,889 +1,991 @@
 /*!
- * backbone.layoutmanager.js v0.8.8
+ * backbone.layoutmanager.js v0.9.2
  * Copyright 2013, Tim Branyen (@tbranyen)
  * backbone.layoutmanager.js may be freely distributed under the MIT license.
  */
-(function (window) {
+(function(window, factory) {
+  "use strict";
+  var Backbone = window.Backbone;
 
-    "use strict";
+  // AMD. Register as an anonymous module.  Wrap in function so we have access
+  // to root via `this`.
+  if (typeof define === "function" && define.amd) {
+    return define(["backbone", "underscore", "jquery"], function() {
+      return factory.apply(window, arguments);
+    });
+  }
+
+  // Browser globals.
+  Backbone.Layout = factory.call(window, Backbone, window._, Backbone.$);
+}(typeof global === "object" ? global : this, function (Backbone, _, $) {
+"use strict";
+
+// Create a reference to the global object. In browsers, it will map to the
+// `window` object; in Node, it will be `global`.
+var window = this;
 
 // Hoisted, referenced at the bottom of the source.  This caches a list of all
 // LayoutManager options at definition time.
-    var keys;
-
-// Localize global dependency references.
-    var Backbone = window.Backbone;
-    var _ = window._;
-    var $ = Backbone.$;
-
-// Used for issuing warnings and debugging.
-    var warn = window.console && window.console.warn;
-    var trace = window.console && window.console.trace;
+var keys;
 
 // Maintain references to the two `Backbone.View` functions that are
 // overwritten so that they can be proxied.
-    var _configure = Backbone.View.prototype._configure;
-    var render = Backbone.View.prototype.render;
+var _configure = Backbone.View.prototype._configure;
 
 // Cache these methods for performance.
-    var aPush = Array.prototype.push;
-    var aConcat = Array.prototype.concat;
-    var aSplice = Array.prototype.splice;
+var aPush = Array.prototype.push;
+var aConcat = Array.prototype.concat;
+var aSplice = Array.prototype.splice;
 
 // LayoutManager is a wrapper around a `Backbone.View`.
-    var LayoutManager = Backbone.View.extend({
-            // This named function allows for significantly easier debugging.
-            constructor  : function Layout(options) {
-                // Options may not always be passed to the constructor, this ensures it is
-                // always an object.
-                options = options || {};
+var LayoutManager = Backbone.View.extend({
+  _render: function(options) {
+    // Keep the view consistent between callbacks and deferreds.
+    var view = this;
+    // Shorthand the manager.
+    var manager = view.__manager__;
+    // Cache these properties.
+    var beforeRender = options.beforeRender;
+    // Create a deferred instead of going off
+    var def = options.deferred();
 
-                // Grant this View superpowers.
-                LayoutManager.setupView(this, options);
+    // Ensure all nested Views are properly scrubbed if re-rendering.
+    if (view.hasRendered) {
+      view._removeViews();
+    }
 
-                // Have Backbone set up the rest of this View.
-                Backbone.View.call(this, options);
-            },
+    // This continues the render flow after `beforeRender` has completed.
+    manager.callback = function() {
+      // Clean up asynchronous manager properties.
+      delete manager.isAsync;
+      delete manager.callback;
 
-            // Shorthand to `setView` function with the `insert` flag set.
-            insertView   : function (selector, view) {
-                // If the `view` argument exists, then a selector was passed in.  This code
-                // path will forward the selector on to `setView`.
-                if (view) {
-                    return this.setView(selector, view, true);
-                }
+      // Always emit a beforeRender event.
+      view.trigger("beforeRender", view);
 
-                // If no `view` argument is defined, then assume the first argument is the
-                // View, somewhat now confusingly named `selector`.
-                return this.setView(selector, true);
-            },
+      // Render!
+      view._viewRender(options, manager).render().then(function() {
+        // Complete this deferred once resolved.
+        def.resolve();
+      });
+    };
 
-            // Iterate over an object and ensure every value is wrapped in an array to
-            // ensure they will be inserted, then pass that object to `setViews`.
-            insertViews  : function (views) {
-                // If an array of views was passed it should be inserted into the
-                // root view. Much like calling insertView without a selector.
-                if (_.isArray(views)) {
-                    return this.setViews({ "": views });
-                }
+    // If a beforeRender function is defined, call it.
+    if (beforeRender) {
+      beforeRender.call(view, view);
+    }
 
-                _.each(views, function (view, selector) {
-                    views[selector] = _.isArray(view) ? view : [view];
-                });
+    if (!manager.isAsync) {
+      manager.callback();
+    }
 
-                return this.setViews(views);
-            },
+    // Return this intermediary promise.
+    return def.promise();
+  },
 
-            // Returns the View that matches the `getViews` filter function.
-            getView      : function (fn) {
-                // If `getView` is invoked with undefined as the first argument, then the
-                // second argument will be used instead.  This is to allow
-                // `getViews(undefined, fn)` to work as `getViews(fn)`.  Useful for when
-                // you are allowing an optional selector.
-                if (fn == null) {
-                    fn = arguments[1];
-                }
+  // This function is responsible for pairing the rendered template into the
+  // DOM element.
+  _applyTemplate: function(rendered, options, manager, def) {
+    // Actually put the rendered contents into the element.
+    if (_.isString(rendered)) {
+      // If no container is specified, we must replace the content.
+      if (manager.noel) {
+        rendered = $.parseHTML(rendered, true);
 
-                return this.getViews(fn).first().value();
-            },
+        // Remove extra root elements.
+        this.$el.slice(1).remove();
 
-            // Provide a filter function to get a flattened array of all the subviews.
-            // If the filter function is omitted it will return all subviews.  If a
-            // String is passed instead, it will return the Views for that selector.
-            getViews     : function (fn) {
-                var views;
+        // Swap out the View on the first top level element to avoid
+        // duplication.
+        this.$el.replaceWith(rendered);
 
-                // If the filter argument is a String, then return a chained Version of the
-                // elements. The value at the specified filter may be undefined, a single
-                // view, or an array of views; in all cases, chain on a flat array.
-                if (typeof fn === "string") {
-                    views = this.views[fn] || [];
-                    return _.chain([].concat(views));
-                }
+        // Don't delegate events here - we'll do that in resolve()
+        this.setElement(rendered, false);
+      } else {
+        options.html(this.$el, rendered);
+      }
+    }
 
-                // Generate an array of all top level (no deeply nested) Views flattened.
-                views = _.chain(this.views).map(function (view) {
-                    return _.isArray(view) ? view : [view];
-                }, this).flatten();
+    // Resolve only after fetch and render have succeeded.
+    def.resolveWith(this, [this]);
+  },
 
-                // If the argument passed is an Object, then pass it to `_.where`.
-                if (typeof fn === "object") {
-                    return views.where(fn);
-                }
+  // Creates a deferred and returns a function to call when finished.
+  // This gets passed to all _render methods.  The `root` value here is passed
+  // from the `manage(this).render()` line in the `_render` function
+  _viewRender: function(options, manager) {
+    var url, contents, def;
+    var root = this;
 
-                // If a filter function is provided, run it on all Views and return a
-                // wrapped chain. Otherwise, simply return a wrapped chain of all Views.
-                return typeof fn === "function" ? views.filter(fn) : views;
-            },
+    // Once the template is successfully fetched, use its contents to proceed.
+    // Context argument is first, since it is bound for partial application
+    // reasons.
+    function done(context, template) {
+      // Store the rendered template someplace so it can be re-assignable.
+      var rendered;
 
-            // Use this to remove Views, internally uses `getViews` so you can pass the
-            // same argument here as you would to that method.
-            removeView   : function (fn) {
-                // Allow an optional selector or function to find the right model and
-                // remove nested Views based off the results of the selector or filter.
-                return this.getViews(fn).each(function (nestedView) {
-                    nestedView.remove();
-                });
-            },
+      // Trigger this once the render method has completed.
+      manager.callback = function(rendered) {
+        // Clean up asynchronous manager properties.
+        delete manager.isAsync;
+        delete manager.callback;
 
-            // This takes in a partial name and view instance and assigns them to
-            // the internal collection of views.  If a view is not a LayoutManager
-            // instance, then mix in the LayoutManager prototype.  This ensures
-            // all Views can be used successfully.
-            //
-            // Must definitely wrap any render method passed in or defaults to a
-            // typical render function `return layout(this).render()`.
-            setView      : function (name, view, insert) {
-                var manager, existing, options;
-                // Parent view, the one you are setting a View on.
-                var root = this;
+        root._applyTemplate(rendered, options, manager, def);
+      };
 
-                // If no name was passed, use an empty string and shift all arguments.
-                if (typeof name !== "string") {
-                    insert = view;
-                    view = name;
-                    name = "";
-                }
+      // Ensure the cache is up-to-date.
+      LayoutManager.cache(url, template);
 
-                // If the parent views object doesn't exist... create it.
-                this.views = this.views || {};
+      // Render the View into the el property.
+      if (template) {
+        rendered = options.renderTemplate.call(root, template, context);
+      }
 
-                // Shorthand the `__manager__` property.
-                manager = view.__manager__;
+      // If the function was synchronous, continue execution.
+      if (!manager.isAsync) {
+        root._applyTemplate(rendered, options, manager, def);
+      }
+    }
 
-                // Shorthand the View that potentially already exists.
-                existing = this.views[name];
+    return {
+      // This `render` function is what gets called inside of the View render,
+      // when `manage(this).render` is called.  Returns a promise that can be
+      // used to know when the element has been rendered into its parent.
+      render: function() {
+        var context = root.serialize || options.serialize;
+        var template = root.template || options.template;
 
-                // If the View has not been properly set up, throw an Error message
-                // indicating that the View needs `manage: true` set.
-                if (!manager) {
-                    throw new Error("Please set `View#manage` property with selector '" +
-                        name + "' to `true`.");
-                }
+        // Create a deferred specifically for fetching.
+        def = options.deferred();
 
-                // Assign options.
-                options = view.getAllOptions();
+        // If data is a function, immediately call it.
+        if (_.isFunction(context)) {
+          context = context.call(root);
+        }
 
-                // Add reference to the parentView.
-                manager.parent = root;
+        // Set the internal callback to trigger once the asynchronous or
+        // synchronous behavior has completed.
+        manager.callback = function(contents) {
+          // Clean up asynchronous manager properties.
+          delete manager.isAsync;
+          delete manager.callback;
 
-                // Add reference to the placement selector used.
-                manager.selector = name;
+          done(context, contents);
+        };
 
-                // Set up event bubbling, inspired by Backbone.ViewMaster.  Do not bubble
-                // internal events that are triggered.
-                view.on("all", function (name) {
-                    if (name !== "beforeRender" && name !== "afterRender") {
-                        root.trigger.apply(root, arguments);
-                    }
-                }, view);
+        // Set the url to the prefix + the view's template property.
+        if (typeof template === "string") {
+          url = options.prefix + template;
+        }
 
-                // Code path is less complex for Views that are not being inserted.  Simply
-                // remove existing Views and bail out with the assignment.
-                if (!insert) {
-                    // If the View we are adding has already been rendered, simply inject it
-                    // into the parent.
-                    if (manager.hasRendered) {
-                        // Apply the partial.
-                        options.partial(root.$el, view.$el, root.__manager__, manager);
-                    }
+        // Check if contents are already cached and if they are, simply process
+        // the template with the correct data.
+        if (contents = LayoutManager.cache(url)) {
+          done(context, contents, url);
 
-                    // Ensure remove is called when swapping View's.
-                    if (existing) {
-                        // If the views are an array, iterate and remove each individually.
-                        _.each(aConcat.call([], existing), function (nestedView) {
-                            nestedView.remove();
-                        });
-                    }
+          return def;
+        }
 
-                    // Assign to main views object and return for chainability.
-                    return this.views[name] = view;
-                }
+        // Fetch layout and template contents.
+        if (typeof template === "string") {
+          contents = options.fetchTemplate.call(root, options.prefix +
+            template);
+        // If the template is already a function, simply call it.
+        } else if (typeof template === "function") {
+          contents = template;
+        // If its not a string and not undefined, pass the value to `fetch`.
+        } else if (template != null) {
+          contents = options.fetchTemplate.call(root, template);
+        }
 
-                // Ensure this.views[name] is an array and push this View to the end.
-                this.views[name] = aConcat.call([], existing || [], view);
+        // If the function was synchronous, continue execution.
+        if (!manager.isAsync) {
+          done(context, contents);
+        }
 
-                // Put the view into `insert` mode.
-                manager.insert = true;
+        return def;
+      }
+    };
+  },
 
-                return view;
-            },
+  // This named function allows for significantly easier debugging.
+  constructor: function Layout(options) {
+    // Grant this View superpowers.
+    this.manage = true;
 
-            // Allows the setting of multiple views instead of a single view.
-            setViews     : function (views) {
-                // Iterate over all the views and use the View's view method to assign.
-                _.each(views, function (view, name) {
-                    // If the view is an array put all views into insert mode.
-                    if (_.isArray(view)) {
-                        return _.each(view, function (view) {
-                            this.insertView(name, view);
-                        }, this);
-                    }
+    // Have Backbone set up the rest of this View.
+    Backbone.View.call(this, options);
+  },
 
-                    // Assign each view using the view function.
-                    this.setView(name, view);
-                }, this);
+  // This method is used within specific methods to indicate that they should
+  // be treated as asynchronous.  This method should only be used within the
+  // render chain, otherwise unexpected behavior may occur.
+  async: function() {
+    var manager = this.__manager__;
 
-                // Allow for chaining
-                return this;
-            },
+    // Set this View's action to be asynchronous.
+    manager.isAsync = true;
 
-            // By default this should find all nested views and render them into
-            // the this.el and call done once all of them have successfully been
-            // resolved.
-            //
-            // This function returns a promise that can be chained to determine
-            // once all subviews and main view have been rendered into the view.el.
-            render       : function () {
-                var root = this;
-                var options = root.getAllOptions();
-                var manager = root.__manager__;
-                var parent = manager.parent;
-                var rentManager = parent && parent.__manager__;
-                var def = options.deferred();
+    // Return the callback.
+    return manager.callback;
+  },
 
-                // Triggered once the render has succeeded.
-                function resolve() {
-                    var next, afterRender;
+  promise: function() {
+    return this.__manager__.renderDeferred.promise();
+  },
 
-                    // If there is a parent, attach.
-                    if (parent) {
-                        if (!options.contains(parent.el, root.el)) {
-                            // Apply the partial.
-                            options.partial(parent.$el, root.$el, rentManager, manager);
-                        }
-                    }
+  // Sometimes it's desirable to only render the child views under the parent.
+  // This is typical for a layout that does not change.  This method will
+  // iterate over the child Views and aggregate all child render promises and
+  // return the parent View.  The internal `promise()` method will return the
+  // aggregate promise that resolves once all children have completed their
+  // render.
+  renderViews: function() {
+    var root = this;
+    var manager = root.__manager__;
+    var options = root.getAllOptions();
+    var newDeferred = options.deferred();
 
-                    // Ensure events are always correctly bound after rendering.
-                    root.delegateEvents();
+    // Collect all promises from rendering the child views and wait till they
+    // all complete.
+    var promises = root.getViews().map(function(view) {
+      return view.render().__manager__.renderDeferred;
+    }).value();
 
-                    // Set this View as successfully rendered.
-                    manager.hasRendered = true;
+    // Simulate a parent render to remain consistent.
+    manager.renderDeferred = newDeferred.promise();
 
-                    // Only process the queue if it exists.
-                    if (next = manager.queue.shift()) {
-                        // Ensure that the next render is only called after all other
-                        // `done` handlers have completed.  This will prevent `render`
-                        // callbacks from firing out of order.
-                        next();
-                    } else {
-                        // Once the queue is depleted, remove it, the render process has
-                        // completed.
-                        delete manager.queue;
-                    }
+    // Once all child views have completed rendering, resolve parent deferred
+    // with the correct context.
+    options.when(promises).then(function() {
+      newDeferred.resolveWith(root, [root]);
+    });
 
-                    // Reusable function for triggering the afterRender callback and event
-                    // and setting the hasRendered flag.
-                    function completeRender() {
-                        var afterRender = options.afterRender;
+    // Allow this method to be chained.
+    return root;
+  },
 
-                        if (afterRender) {
-                            afterRender.call(root, root);
-                        }
+  // Shorthand to `setView` function with the `insert` flag set.
+  insertView: function(selector, view) {
+    // If the `view` argument exists, then a selector was passed in.  This code
+    // path will forward the selector on to `setView`.
+    if (view) {
+      return this.setView(selector, view, true);
+    }
 
-                        // Always emit an afterRender event.
-                        root.trigger("afterRender", root);
+    // If no `view` argument is defined, then assume the first argument is the
+    // View, somewhat now confusingly named `selector`.
+    return this.setView(selector, true);
+  },
 
-                        // If there are multiple top level elements and `el: false` is used,
-                        // display a warning message and a stack trace.
-                        if (manager.noel && root.$el.length > 1) {
-                            // Do not display a warning while testing or if warning suppression
-                            // is enabled.
-                            if (warn && !options.suppressWarnings) {
-                                window.console.warn("Using `el: false` with multiple top level " +
-                                    "elements is not supported.");
+  // Iterate over an object and ensure every value is wrapped in an array to
+  // ensure they will be inserted, then pass that object to `setViews`.
+  insertViews: function(views) {
+    // If an array of views was passed it should be inserted into the
+    // root view. Much like calling insertView without a selector.
+    if (_.isArray(views)) {
+      return this.setViews({ "": views });
+    }
 
-                                // Provide a stack trace if available to aid with debugging.
-                                if (trace) {
-                                    window.console.trace();
-                                }
-                            }
-                        }
-                    }
+    _.each(views, function(view, selector) {
+      views[selector] = _.isArray(view) ? view : [view];
+    });
 
-                    // If the parent is currently rendering, wait until it has completed
-                    // until calling the nested View's `afterRender`.
-                    if (rentManager && rentManager.queue) {
-                        // Wait until the parent View has finished rendering, which could be
-                        // asynchronous, and trigger afterRender on this View once it has
-                        // compeleted.
-                        parent.once("afterRender", completeRender);
-                    } else {
-                        // This View and its parent have both rendered.
-                        completeRender();
-                    }
+    return this.setViews(views);
+  },
 
-                    return def.resolveWith(root, [root]);
-                }
+  // Returns the View that matches the `getViews` filter function.
+  getView: function(fn) {
+    // If `getView` is invoked with undefined as the first argument, then the
+    // second argument will be used instead.  This is to allow
+    // `getViews(undefined, fn)` to work as `getViews(fn)`.  Useful for when
+    // you are allowing an optional selector.
+    if (fn == null) {
+      fn = arguments[1];
+    }
 
-                // Actually facilitate a render.
-                function actuallyRender() {
-                    var options = root.getAllOptions();
-                    var manager = root.__manager__;
-                    var parent = manager.parent;
-                    var rentManager = parent && parent.__manager__;
+    return this.getViews(fn).first().value();
+  },
 
-                    // The `_viewRender` method is broken out to abstract away from having
-                    // too much code in `actuallyRender`.
-                    root._render(LayoutManager._viewRender, options).done(function () {
-                        // If there are no children to worry about, complete the render
-                        // instantly.
-                        if (!_.keys(root.views).length) {
-                            return resolve();
-                        }
+  // Provide a filter function to get a flattened array of all the subviews.
+  // If the filter function is omitted it will return all subviews.  If a
+  // String is passed instead, it will return the Views for that selector.
+  getViews: function(fn) {
+    var views;
 
-                        // Create a list of promises to wait on until rendering is done.
-                        // Since this method will run on all children as well, its sufficient
-                        // for a full hierarchical.
-                        var promises = _.map(root.views, function (view) {
-                            var insert = _.isArray(view);
+    // If the filter argument is a String, then return a chained Version of the
+    // elements. The value at the specified filter may be undefined, a single
+    // view, or an array of views; in all cases, chain on a flat array.
+    if (typeof fn === "string") {
+      fn = this.sections[fn] || fn;
+      views = this.views[fn] || [];
 
-                            // If items are being inserted, they will be in a non-zero length
-                            // Array.
-                            if (insert && view.length) {
-                                // Schedule each view to be rendered in order and return a promise
-                                // representing the result of the final rendering.
-                                return _.reduce(view.slice(1), function (prevRender, view) {
-                                    return prevRender.then(function () {
-                                        return view.render();
-                                    });
-                                    // The first view should be rendered immediately, and the resulting
-                                    // promise used to initialize the reduction.
-                                }, view[0].render());
-                            }
+      // If Views is undefined you are concatenating an `undefined` to an array
+      // resulting in a value being returned.  Defaulting to an array prevents
+      // this.
+      //return _.chain([].concat(views || []));
+      return _.chain([].concat(views));
+    }
 
-                            // Only return the fetch deferred, resolve the main deferred after
-                            // the element has been attached to it's parent.
-                            return !insert ? view.render() : view;
-                        });
+    // Generate an array of all top level (no deeply nested) Views flattened.
+    views = _.chain(this.views).map(function(view) {
+      return _.isArray(view) ? view : [view];
+    }, this).flatten();
 
-                        // Once all nested Views have been rendered, resolve this View's
-                        // deferred.
-                        options.when(promises).done(resolve);
-                    });
-                }
+    // If the argument passed is an Object, then pass it to `_.where`.
+    if (typeof fn === "object") {
+      return views.where(fn);
+    }
 
-                // Another render is currently happening if there is an existing queue, so
-                // push a closure to render later into the queue.
-                if (manager.queue) {
-                    aPush.call(manager.queue, actuallyRender);
-                } else {
-                    manager.queue = [];
+    // If a filter function is provided, run it on all Views and return a
+    // wrapped chain. Otherwise, simply return a wrapped chain of all Views.
+    return typeof fn === "function" ? views.filter(fn) : views;
+  },
 
-                    // This the first `render`, preceeding the `queue` so render
-                    // immediately.
-                    actuallyRender(root, def);
-                }
+  // Use this to remove Views, internally uses `getViews` so you can pass the
+  // same argument here as you would to that method.
+  removeView: function(fn) {
+    // Allow an optional selector or function to find the right model and
+    // remove nested Views based off the results of the selector or filter.
+    return this.getViews(fn).each(function(nestedView) {
+      nestedView.remove();
+    });
+  },
 
-                // Add the View to the deferred so that `view.render().view.el` is
-                // possible.
-                def.view = root;
+  // This takes in a partial name and view instance and assigns them to
+  // the internal collection of views.  If a view is not a LayoutManager
+  // instance, then mix in the LayoutManager prototype.  This ensures
+  // all Views can be used successfully.
+  //
+  // Must definitely wrap any render method passed in or defaults to a
+  // typical render function `return layout(this).render()`.
+  setView: function(name, view, insert) {
+    var manager, options, selector;
+    // Parent view, the one you are setting a View on.
+    var root = this;
 
-                // This is the promise that determines if the `render` function has
-                // completed or not.
-                return def;
-            },
+    // If no name was passed, use an empty string and shift all arguments.
+    if (typeof name !== "string") {
+      insert = view;
+      view = name;
+      name = "";
+    }
 
-            // Ensure the cleanup function is called whenever remove is called.
-            remove       : function () {
-                // Force remove itself from its parent.
-                LayoutManager._removeView(this, true);
+    // Shorthand the `__manager__` property.
+    manager = view.__manager__;
 
-                // Call the original remove function.
-                return this._remove.apply(this, arguments);
-            },
+    // If the View has not been properly set up, throw an Error message
+    // indicating that the View needs `manage: true` set.
+    if (!manager) {
+      throw new Error("The argument associated with selector '" + name +
+        "' is defined and a View.  Set `manage` property to true for " +
+        "Backbone.View instances.");
+    }
 
-            // Merge instance and global options.
-            getAllOptions: function () {
-                // Instance overrides take precedence, fallback to prototype options.
-                return _.extend({}, this, LayoutManager.prototype.options, this.options);
+    // Assign options.
+    options = view.getAllOptions();
+
+    // Add reference to the parentView.
+    manager.parent = root;
+
+    // Add reference to the placement selector used.
+    selector = manager.selector = root.sections[name] || name;
+
+    // Code path is less complex for Views that are not being inserted.  Simply
+    // remove existing Views and bail out with the assignment.
+    if (!insert) {
+      // If the View we are adding has already been rendered, simply inject it
+      // into the parent.
+      if (view.hasRendered) {
+        // Apply the partial.
+        options.partial(root.$el, view.$el, root.__manager__, manager);
+      }
+
+      // Ensure remove is called when swapping View's.
+      root.removeView(name);
+
+      // Assign to main views object and return for chainability.
+      return root.views[selector] = view;
+    }
+
+    // Ensure this.views[selector] is an array and push this View to
+    // the end.
+    root.views[selector] = aConcat.call([], root.views[name] || [], view);
+
+    // Put the parent view into `insert` mode.
+    root.__manager__.insert = true;
+
+    return view;
+  },
+
+  // Allows the setting of multiple views instead of a single view.
+  setViews: function(views) {
+    // Iterate over all the views and use the View's view method to assign.
+    _.each(views, function(view, name) {
+      // If the view is an array put all views into insert mode.
+      if (_.isArray(view)) {
+        return _.each(view, function(view) {
+          this.insertView(name, view);
+        }, this);
+      }
+
+      // Assign each view using the view function.
+      this.setView(name, view);
+    }, this);
+
+    // Allow for chaining
+    return this;
+  },
+
+  // By default this should find all nested views and render them into
+  // the this.el and call done once all of them have successfully been
+  // resolved.
+  //
+  // This function returns a promise that can be chained to determine
+  // once all subviews and main view have been rendered into the view.el.
+  render: function() {
+    var root = this;
+    var options = root.getAllOptions();
+    var manager = root.__manager__;
+    var parent = manager.parent;
+    var rentManager = parent && parent.__manager__;
+    var def = options.deferred();
+
+    // Triggered once the render has succeeded.
+    function resolve() {
+      var next;
+
+      // Insert all subViews into the parent at once.
+      _.each(root.views, function(views, selector) {
+        // Fragments aren't used on arrays of subviews.
+        if (_.isArray(views)) {
+          options.htmlBatch(root, views, selector);
+        }
+      });
+
+      // If there is a parent and we weren't attached to it via the previous
+      // method (single view), attach.
+      if (parent && !manager.insertedViaFragment) {
+        if (!options.contains(parent.el, root.el)) {
+          // Apply the partial using parent's html() method.
+          parent.getAllOptions().partial(parent.$el, root.$el, rentManager,
+            manager);
+        }
+      }
+
+      // Ensure events are always correctly bound after rendering.
+      root.delegateEvents();
+
+      // Set this View as successfully rendered.
+      root.hasRendered = true;
+
+      // Only process the queue if it exists.
+      if (next = manager.queue.shift()) {
+        // Ensure that the next render is only called after all other
+        // `done` handlers have completed.  This will prevent `render`
+        // callbacks from firing out of order.
+        next();
+      } else {
+        // Once the queue is depleted, remove it, the render process has
+        // completed.
+        delete manager.queue;
+      }
+
+      // Reusable function for triggering the afterRender callback and event
+      // and setting the hasRendered flag.
+      function completeRender() {
+        var console = window.console;
+        var afterRender = options.afterRender;
+
+        if (afterRender) {
+          afterRender.call(root, root);
+        }
+
+        // Always emit an afterRender event.
+        root.trigger("afterRender", root);
+
+        // If there are multiple top level elements and `el: false` is used,
+        // display a warning message and a stack trace.
+        if (manager.noel && root.$el.length > 1) {
+          // Do not display a warning while testing or if warning suppression
+          // is enabled.
+          if (_.isFunction(console.warn) && !options.suppressWarnings) {
+            console.warn("`el: false` with multiple top level elements is " +
+              "not supported.");
+
+            // Provide a stack trace if available to aid with debugging.
+            if (_.isFunction(console.trace)) {
+              console.trace();
             }
-        },
-        {
-            // Clearable cache.
-            _cache      : {},
-
-            // Creates a deferred and returns a function to call when finished.
-            _makeAsync  : function (options, done) {
-                var handler = options.deferred();
-
-                // Used to handle asynchronous renders.
-                handler.async = function () {
-                    handler._isAsync = true;
-
-                    return done;
-                };
-
-                return handler;
-            },
-
-            // This gets passed to all _render methods.  The `root` value here is passed
-            // from the `manage(this).render()` line in the `_render` function
-            _viewRender : function (root, options) {
-                var url, contents, fetchAsync, renderedEl;
-                var manager = root.__manager__;
-
-                // This function is responsible for pairing the rendered template into
-                // the DOM element.
-                function applyTemplate(rendered) {
-                    // Actually put the rendered contents into the element.
-                    if (_.isString(rendered)) {
-                        // If no container is specified, we must replace the content.
-                        if (manager.noel) {
-                            // Trim off the whitespace, since the contents are passed into `$()`.
-                            rendered = $.trim(rendered);
-
-                            // Hold a reference to created element as replaceWith doesn't return
-                            // new el.
-                            renderedEl = $(rendered);
-
-                            // Remove extra root elements.
-                            root.$el.slice(1).remove();
-
-                            // Swap out the View on the first top level element to avoid
-                            // duplication.
-                            root.$el.replaceWith(renderedEl);
-
-                            // Don't delegate events here - we'll do that in resolve()
-                            root.setElement(renderedEl, false);
-                        } else {
-                            options.html(root.$el, rendered);
-                        }
-                    }
-
-                    // Resolve only after fetch and render have succeeded.
-                    fetchAsync.resolveWith(root, [root]);
-                }
-
-                // Once the template is successfully fetched, use its contents to proceed.
-                // Context argument is first, since it is bound for partial application
-                // reasons.
-                function done(context, contents) {
-                    // Store the rendered template someplace so it can be re-assignable.
-                    var rendered;
-                    // This allows the `render` method to be asynchronous as well as `fetch`.
-                    var renderAsync = LayoutManager._makeAsync(options, function (rendered) {
-                        applyTemplate(rendered);
-                    });
-
-                    // Ensure the cache is up-to-date.
-                    LayoutManager.cache(url, contents);
-
-                    // Render the View into the el property.
-                    if (contents) {
-                        rendered = options.render.call(renderAsync, contents, context);
-                    }
-
-                    // If the function was synchronous, continue execution.
-                    if (!renderAsync._isAsync) {
-                        applyTemplate(rendered);
-                    }
-                }
-
-                return {
-                    // This `render` function is what gets called inside of the View render,
-                    // when `manage(this).render` is called.  Returns a promise that can be
-                    // used to know when the element has been rendered into its parent.
-                    render: function () {
-                        var context = root.serialize || options.serialize;
-                        var template = root.template || options.template;
-
-                        // If data is a function, immediately call it.
-                        if (_.isFunction(context)) {
-                            context = context.call(root);
-                        }
-
-                        // This allows for `var done = this.async()` and then `done(contents)`.
-                        fetchAsync = LayoutManager._makeAsync(options, function (contents) {
-                            done(context, contents);
-                        });
-
-                        // Set the url to the prefix + the view's template property.
-                        if (typeof template === "string") {
-                            url = options.prefix + template;
-                        }
-
-                        // Check if contents are already cached and if they are, simply process
-                        // the template with the correct data.
-                        if (contents = LayoutManager.cache(url)) {
-                            done(context, contents, url);
-
-                            return fetchAsync;
-                        }
-
-                        // Fetch layout and template contents.
-                        if (typeof template === "string") {
-                            contents = options.fetch.call(fetchAsync, options.prefix + template);
-                            // If the template is already a function, simply call it.
-                        } else if (typeof template === "function") {
-                            contents = template;
-                            // If its not a string and not undefined, pass the value to `fetch`.
-                        } else if (template != null) {
-                            contents = options.fetch.call(fetchAsync, template);
-                        }
-
-                        // If the function was synchronous, continue execution.
-                        if (!fetchAsync._isAsync) {
-                            done(context, contents);
-                        }
-
-                        return fetchAsync;
-                    }
-                };
-            },
-
-            // Remove all nested Views.
-            _removeViews: function (root, force) {
-                var views;
-
-                // Shift arguments around.
-                if (typeof root === "boolean") {
-                    force = root;
-                    root = this;
-                }
-
-                // Allow removeView to be called on instances.
-                root = root || this;
-
-                // Iterate over all of the nested View's and remove.
-                root.getViews().each(function (view) {
-                    // Force doesn't care about if a View has rendered or not.
-                    if (view.__manager__.hasRendered || force) {
-                        LayoutManager._removeView(view, force);
-                    }
-                });
-            },
-
-            // Remove a single nested View.
-            _removeView : function (view, force) {
-                var parentViews;
-                // Shorthand the manager for easier access.
-                var manager = view.__manager__;
-                // Test for keep.
-                var keep = typeof view.keep === "boolean" ? view.keep : view.options.keep;
-
-                // Only remove views that do not have `keep` attribute set, unless the
-                // View is in `insert` mode and the force flag is set.
-                if ((!keep && manager.insert === true) || force) {
-                    // Clean out the events.
-                    LayoutManager.cleanViews(view);
-
-                    // Since we are removing this view, force subviews to remove
-                    view._removeViews(true);
-
-                    // Remove the View completely.
-                    view.$el.remove();
-
-                    // Bail out early if no parent exists.
-                    if (!manager.parent) {
-                        return;
-                    }
-
-                    // Assign (if they exist) the sibling Views to a property.
-                    parentViews = manager.parent.views[manager.selector];
-
-                    // If this is an array of items remove items that are not marked to
-                    // keep.
-                    if (_.isArray(parentViews)) {
-                        // Remove duplicate Views.
-                        return _.each(_.clone(parentViews), function (view, i) {
-                            // If the managers match, splice off this View.
-                            if (view && view.__manager__ === manager) {
-                                aSplice.call(parentViews, i, 1);
-                            }
-                        });
-                    }
-
-                    // Otherwise delete the parent selector.
-                    delete manager.parent.views[manager.selector];
-                }
-            },
-
-            // Cache templates into LayoutManager._cache.
-            cache       : function (path, contents) {
-                // If template path is found in the cache, return the contents.
-                if (path in this._cache && contents == null) {
-                    return this._cache[path];
-                    // Ensure path and contents aren't undefined.
-                } else if (path != null && contents != null) {
-                    return this._cache[path] = contents;
-                }
-
-                // If the template is not in the cache, return undefined.
-            },
-
-            // Accept either a single view or an array of views to clean of all DOM
-            // events internal model and collection references and all Backbone.Events.
-            cleanViews  : function (views) {
-                // Clear out all existing views.
-                _.each(aConcat.call([], views), function (view) {
-                    var cleanup;
-
-                    // Remove all custom events attached to this View.
-                    view.unbind();
-
-                    // Automatically unbind `model`.
-                    if (view.model instanceof Backbone.Model) {
-                        view.model.off(null, null, view);
-                    }
-
-                    // Automatically unbind `collection`.
-                    if (view.collection instanceof Backbone.Collection) {
-                        view.collection.off(null, null, view);
-                    }
-
-                    // Automatically unbind events bound to this View.
-                    view.stopListening();
-
-                    // If a custom cleanup method was provided on the view, call it after
-                    // the initial cleanup is done
-                    cleanup = view.getAllOptions().cleanup;
-                    if (_.isFunction(cleanup)) {
-                        cleanup.call(view);
-                    }
-                });
-            },
-
-            // This static method allows for global configuration of LayoutManager.
-            configure   : function (options) {
-                _.extend(LayoutManager.prototype.options, options);
-
-                // Allow LayoutManager to manage Backbone.View.prototype.
-                if (options.manage) {
-                    Backbone.View.prototype.manage = true;
-                }
-
-                // Disable the element globally.
-                if (options.el === false) {
-                    Backbone.View.prototype.el = false;
-                }
-
-                // Allow global configuration of `suppressWarnings`.
-                if (options.suppressWarnings === true) {
-                    Backbone.View.prototype.suppressWarnings = true;
-                }
-            },
-
-            // Configure a View to work with the LayoutManager plugin.
-            setupView   : function (views, options) {
-                // Set up all Views passed.
-                _.each(aConcat.call([], views), function (view) {
-                    // If the View has already been setup, no need to do it again.
-                    if (view.__manager__) {
-                        return;
-                    }
-
-                    var views, declaredViews, viewOptions;
-                    var proto = LayoutManager.prototype;
-                    var viewOverrides = _.pick(view, keys);
-
-                    // Ensure necessary properties are set.
-                    _.defaults(view, {
-                        // Ensure a view always has a views object.
-                        views       : {},
-
-                        // Internal state object used to store whether or not a View has been
-                        // taken over by layout manager and if it has been rendered into the
-                        // DOM.
-                        __manager__ : {},
-
-                        // Add the ability to remove all Views.
-                        _removeViews: LayoutManager._removeViews,
-
-                        // Add the ability to remove itself.
-                        _removeView : LayoutManager._removeView
-
-                        // Mix in all LayoutManager prototype properties as well.
-                    }, LayoutManager.prototype);
-
-                    // Extend the options with the prototype and passed options.
-                    options = view.options = _.defaults(options || {}, view.options,
-                        proto.options);
-
-                    // Ensure view events are properly copied over.
-                    viewOptions = _.pick(options, aConcat.call(["events"],
-                        _.values(options.events)));
-
-                    // Merge the View options into the View.
-                    _.extend(view, viewOptions);
-
-                    // If the View still has the Backbone.View#render method, remove it.
-                    // Don't want it accidentally overriding the LM render.
-                    if (viewOverrides.render === LayoutManager.prototype.render ||
-                        viewOverrides.render === Backbone.View.prototype.render) {
-                        delete viewOverrides.render;
-                    }
-
-                    // Pick out the specific properties that can be dynamically added at
-                    // runtime and ensure they are available on the view object.
-                    _.extend(options, viewOverrides);
-
-                    // By default the original Remove function is the Backbone.View one.
-                    view._remove = Backbone.View.prototype.remove;
-
-                    // Always use this render function when using LayoutManager.
-                    view._render = function (manage, options) {
-                        // Keep the view consistent between callbacks and deferreds.
-                        var view = this;
-                        // Shorthand the manager.
-                        var manager = view.__manager__;
-                        // Cache these properties.
-                        var beforeRender = options.beforeRender;
-
-                        // Ensure all nested Views are properly scrubbed if re-rendering.
-                        if (manager.hasRendered) {
-                            this._removeViews();
-                        }
-
-                        // If a beforeRender function is defined, call it.
-                        if (beforeRender) {
-                            beforeRender.call(this, this);
-                        }
-
-                        // Always emit a beforeRender event.
-                        this.trigger("beforeRender", this);
-
-                        // Render!
-                        return manage(this, options).render();
-                    };
-
-                    // Ensure the render is always set correctly.
-                    view.render = LayoutManager.prototype.render;
-
-                    // If the user provided their own remove override, use that instead of
-                    // the default.
-                    if (view.remove !== proto.remove) {
-                        view._remove = view.remove;
-                        view.remove = proto.remove;
-                    }
-
-                    // Normalize views to exist on either instance or options, default to
-                    // options.
-                    views = options.views || view.views;
-
-                    // Set the internal views, only if selectors have been provided.
-                    if (_.keys(views).length) {
-                        // Keep original object declared containing Views.
-                        declaredViews = views;
-
-                        // Reset the property to avoid duplication or overwritting.
-                        view.views = {};
-
-                        // Set the declared Views.
-                        view.setViews(declaredViews);
-                    }
-
-                    // If a template is passed use that instead.
-                    if (view.options.template) {
-                        view.options.template = options.template;
-                        // Ensure the template is mapped over.
-                    } else if (view.template) {
-                        options.template = view.template;
-                    }
-                });
-            }
+          }
+        }
+      }
+
+      // If the parent is currently rendering, wait until it has completed
+      // until calling the nested View's `afterRender`.
+      if (rentManager && rentManager.queue) {
+        // Wait until the parent View has finished rendering, which could be
+        // asynchronous, and trigger afterRender on this View once it has
+        // compeleted.
+        parent.once("afterRender", completeRender);
+      } else {
+        // This View and its parent have both rendered.
+        completeRender();
+      }
+
+      return def.resolveWith(root, [root]);
+    }
+
+    // Actually facilitate a render.
+    function actuallyRender() {
+      var options = root.getAllOptions();
+
+      // The `_viewRender` method is broken out to abstract away from having
+      // too much code in `actuallyRender`.
+      root._render(options).done(function() {
+        // If there are no children to worry about, complete the render
+        // instantly.
+        if (!_.keys(root.views).length) {
+          return resolve();
+        }
+
+        // Create a list of promises to wait on until rendering is done.
+        // Since this method will run on all children as well, its sufficient
+        // for a full hierarchical.
+        var promises = _.map(root.views, function(view) {
+          var insert = _.isArray(view);
+
+          // If items are being inserted, they will be in a non-zero length
+          // Array.
+          if (insert && view.length) {
+            // Mark each subview's manager so they don't attempt to attach by
+            // themselves.  Return a single promise representing the entire
+            // render.
+            return options.when(_.map(view, function(subView) {
+              subView.__manager__.insertedViaFragment = true;
+              return subView.render().__manager__.renderDeferred;
+            }));
+          }
+
+          // Only return the fetch deferred, resolve the main deferred after
+          // the element has been attached to it's parent.
+          return !insert ? view.render().__manager__.renderDeferred : view;
         });
 
-// Convenience assignment to make creating Layout's slightly shorter.
-    Backbone.Layout = LayoutManager;
+        // Once all nested Views have been rendered, resolve this View's
+        // deferred.
+        options.when(promises).done(resolve);
+      });
+    }
+
+    // Another render is currently happening if there is an existing queue, so
+    // push a closure to render later into the queue.
+    if (manager.queue) {
+      aPush.call(manager.queue, actuallyRender);
+    } else {
+      manager.queue = [];
+
+      // This the first `render`, preceeding the `queue` so render
+      // immediately.
+      actuallyRender(root, def);
+    }
+
+    // Put the deferred inside of the `__manager__` object, since we don't want
+    // end users accessing this directly anymore in favor of the `afterRender`
+    // event.  So instead of doing `render().then(...` do
+    // `render().once("afterRender", ...`.
+    root.__manager__.renderDeferred = def;
+
+    // Return the actual View for chainability purposes.
+    return root;
+  },
+
+  // Ensure the cleanup function is called whenever remove is called.
+  remove: function() {
+    // Force remove itself from its parent.
+    LayoutManager._removeView(this, true);
+
+    // Call the original remove function.
+    return this._remove.apply(this, arguments);
+  },
+
+  // Merge instance and global options.
+  getAllOptions: function() {
+    // Instance overrides take precedence, fallback to prototype options.
+    return _.extend({}, this, LayoutManager.prototype.options, this.options);
+  }
+},
+{
+  // Clearable cache.
+  _cache: {},
+
+  // Remove all nested Views.
+  _removeViews: function(root, force) {
+    // Shift arguments around.
+    if (typeof root === "boolean") {
+      force = root;
+      root = this;
+    }
+
+    // Allow removeView to be called on instances.
+    root = root || this;
+
+    // Iterate over all of the nested View's and remove.
+    root.getViews().each(function(view) {
+      // Force doesn't care about if a View has rendered or not.
+      if (view.hasRendered || force) {
+        LayoutManager._removeView(view, force);
+      }
+    });
+  },
+
+  // Remove a single nested View.
+  _removeView: function(view, force) {
+    var parentViews;
+    // Shorthand the managers for easier access.
+    var manager = view.__manager__;
+    var rentManager = manager.parent && manager.parent.__manager__;
+    // Test for keep.
+    var keep = typeof view.keep === "boolean" ? view.keep : view.options.keep;
+
+    // In insert mode, remove views that do not have `keep` attribute set,
+    // unless the force flag is set.
+    if ((!keep && rentManager && rentManager.insert === true) || force) {
+      // Clean out the events.
+      LayoutManager.cleanViews(view);
+
+      // Since we are removing this view, force subviews to remove
+      view._removeViews(true);
+
+      // Remove the View completely.
+      view.$el.remove();
+
+      // Bail out early if no parent exists.
+      if (!manager.parent) { return; }
+
+      // Assign (if they exist) the sibling Views to a property.
+      parentViews = manager.parent.views[manager.selector];
+
+      // If this is an array of items remove items that are not marked to
+      // keep.
+      if (_.isArray(parentViews)) {
+        // Remove duplicate Views.
+        return _.each(_.clone(parentViews), function(view, i) {
+          // If the managers match, splice off this View.
+          if (view && view.__manager__ === manager) {
+            aSplice.call(parentViews, i, 1);
+          }
+        });
+      }
+
+      // Otherwise delete the parent selector.
+      delete manager.parent.views[manager.selector];
+    }
+  },
+
+  // Cache templates into LayoutManager._cache.
+  cache: function(path, contents) {
+    // If template path is found in the cache, return the contents.
+    if (path in this._cache && contents == null) {
+      return this._cache[path];
+    // Ensure path and contents aren't undefined.
+    } else if (path != null && contents != null) {
+      return this._cache[path] = contents;
+    }
+
+    // If the template is not in the cache, return undefined.
+  },
+
+  // Accept either a single view or an array of views to clean of all DOM
+  // events internal model and collection references and all Backbone.Events.
+  cleanViews: function(views) {
+    // Clear out all existing views.
+    _.each(aConcat.call([], views), function(view) {
+      var cleanup;
+
+      // Remove all custom events attached to this View.
+      view.unbind();
+
+      // Automatically unbind `model`.
+      if (view.model instanceof Backbone.Model) {
+        view.model.off(null, null, view);
+      }
+
+      // Automatically unbind `collection`.
+      if (view.collection instanceof Backbone.Collection) {
+        view.collection.off(null, null, view);
+      }
+
+      // Automatically unbind events bound to this View.
+      view.stopListening();
+
+      // If a custom cleanup method was provided on the view, call it after
+      // the initial cleanup is done
+      cleanup = view.getAllOptions().cleanup;
+      if (_.isFunction(cleanup)) {
+        cleanup.call(view);
+      }
+    });
+  },
+
+  // This static method allows for global configuration of LayoutManager.
+  configure: function(options) {
+    _.extend(LayoutManager.prototype.options, options);
+
+    // Allow LayoutManager to manage Backbone.View.prototype.
+    if (options.manage) {
+      Backbone.View.prototype.manage = true;
+    }
+
+    // Disable the element globally.
+    if (options.el === false) {
+      Backbone.View.prototype.el = false;
+    }
+
+    // Allow global configuration of `suppressWarnings`.
+    if (options.suppressWarnings === true) {
+      Backbone.View.prototype.suppressWarnings = true;
+    }
+  },
+
+  // Configure a View to work with the LayoutManager plugin.
+  setupView: function(views, options) {
+    // Set up all Views passed.
+    _.each(aConcat.call([], views), function(view) {
+      // If the View has already been setup, no need to do it again.
+      if (view.__manager__) {
+        return;
+      }
+
+      var views, declaredViews, viewOptions;
+      var proto = LayoutManager.prototype;
+      var viewOverrides = _.pick(view, keys);
+
+      // Ensure necessary properties are set.
+      _.defaults(view, {
+        // Ensure a view always has a views object.
+        views: {},
+
+        // Ensure a view always has a sections object.
+        sections: {},
+
+        // Internal state object used to store whether or not a View has been
+        // taken over by layout manager and if it has been rendered into the
+        // DOM.
+        __manager__: {},
+
+        // Add the ability to remove all Views.
+        _removeViews: LayoutManager._removeViews,
+
+        // Add the ability to remove itself.
+        _removeView: LayoutManager._removeView
+
+      // Mix in all LayoutManager prototype properties as well.
+      }, LayoutManager.prototype);
+
+      // Extend the options with the prototype and passed options.
+      options = view.options = _.defaults(options || {}, view.options,
+        proto.options);
+
+      // Ensure view events are properly copied over.
+      viewOptions = _.pick(options, aConcat.call(["events", "sections"],
+        _.values(options.events)));
+
+      // Merge the View options into the View.
+      _.extend(view, viewOptions);
+
+      // Pick out the specific properties that can be dynamically added at
+      // runtime and ensure they are available on the view object.
+      _.extend(options, viewOverrides);
+
+      // By default the original Remove function is the Backbone.View one.
+      view._remove = Backbone.View.prototype.remove;
+
+      // Ensure the render is always set correctly.
+      view.render = LayoutManager.prototype.render;
+
+      // If the user provided their own remove override, use that instead of
+      // the default.
+      if (view.remove !== proto.remove) {
+        view._remove = view.remove;
+        view.remove = proto.remove;
+      }
+
+      // Normalize views to exist on either instance or options, default to
+      // options.
+      views = options.views || view.views;
+
+      // Set the internal views, only if selectors have been provided.
+      if (_.keys(views).length) {
+        // Keep original object declared containing Views.
+        declaredViews = views;
+
+        // Reset the property to avoid duplication or overwritting.
+        view.views = {};
+
+        // If any declared view is wrapped in a function, invoke it.
+        _.each(declaredViews, function(declaredView, key) {
+          if (typeof declaredView === "function") {
+            declaredViews[key] = declaredView.call(view, view);
+          }
+        });
+
+        // Set the declared Views.
+        view.setViews(declaredViews);
+      }
+
+      // If a template is passed use that instead.
+      if (view.options.template) {
+        view.options.template = options.template;
+      // Ensure the template is mapped over.
+      } else if (view.template) {
+        options.template = view.template;
+      }
+    });
+  }
+});
+
 // Tack on the version.
-    LayoutManager.VERSION = "0.8.8";
+LayoutManager.VERSION = "0.9.2";
+
+Backbone.Layout = LayoutManager;
 
 // Override _configure to provide extra functionality that is necessary in
 // order for the render function reference to be bound during initialize.
-    Backbone.View.prototype._configure = function (options) {
-        var noel, retVal;
+Backbone.View.prototype._configure = function(options) {
+  var noel, retVal;
 
-        // Remove the container element provided by Backbone.
-        if ("el" in options ? options.el === false : this.el === false) {
-            noel = true;
-        }
+  // Remove the container element provided by Backbone.
+  if ("el" in options ? options.el === false : this.el === false) {
+    noel = true;
+  }
 
-        // Run the original _configure.
-        retVal = _configure.apply(this, arguments);
+  // Run the original _configure.
+  retVal = _configure.apply(this, arguments);
 
-        // If manage is set, do it!
-        if (options.manage || this.manage) {
-            // Set up this View.
-            LayoutManager.setupView(this);
-        }
+  // If manage is set, do it!
+  if (options.manage || this.manage) {
+    // Set up this View.
+    LayoutManager.setupView(this);
+  }
 
-        // Assign the `noel` property once we're sure the View we're working with is
-        // managed by LayoutManager.
-        if (this.__manager__) {
-            this.__manager__.noel = noel;
-            this.__manager__.suppressWarnings = options.suppressWarnings;
-        }
+  // Assign the `noel` property once we're sure the View we're working with is
+  // managed by LayoutManager.
+  if (this.__manager__) {
+    this.__manager__.noel = noel;
+    this.__manager__.suppressWarnings = options.suppressWarnings;
+  }
 
-        // Act like nothing happened.
-        return retVal;
-    };
+  // Act like nothing happened.
+  return retVal;
+};
 
 // Default configuration options; designed to be overriden.
-    LayoutManager.prototype.options = {
-        // Prefix template/layout paths.
-        prefix  : "",
+LayoutManager.prototype.options = {
+  // Prefix template/layout paths.
+  prefix: "",
 
-        // Can be used to supply a different deferred implementation.
-        deferred: function () {
-            return $.Deferred();
-        },
+  // Can be used to supply a different deferred implementation.
+  deferred: function() {
+    return $.Deferred();
+  },
 
-        // Fetch is passed a path and is expected to return template contents as a
-        // function or string.
-        fetch   : function (path) {
-            return _.template($(path).html());
-        },
+  // Fetch is passed a path and is expected to return template contents as a
+  // function or string.
+  fetchTemplate: function(path) {
+    return _.template($(path).html());
+  },
 
-        // This is the most common way you will want to partially apply a view into
-        // a layout.
-        partial : function ($root, $el, rentManager, manager) {
-            // If selector is specified, attempt to find it.
-            if (manager.selector) {
-                if (rentManager.noel) {
-                    var $filtered = $root.filter(manager.selector);
-                    $root = $filtered.length ? $filtered : $root.find(manager.selector);
-                } else {
-                    $root = $root.find(manager.selector);
-                }
-            }
+  // By default, render using underscore's templating.
+  renderTemplate: function(template, context) {
+    return template(context);
+  },
 
-            // Use the insert method if insert argument is true.
-            if (manager.insert) {
-                this.insert($root, $el);
-            } else {
-                this.html($root, $el);
-            }
-        },
+  // This is the most common way you will want to partially apply a view into
+  // a layout.
+  partial: function($root, $el, rentManager, manager) {
+    var $filtered;
 
-        // Override this with a custom HTML method, passed a root element and content
-        // (a jQuery collection or a string) to replace the innerHTML with.
-        html    : function ($root, content) {
-            $root.html(content);
-        },
+    // If selector is specified, attempt to find it.
+    if (manager.selector) {
+      if (rentManager.noel) {
+        $filtered = $root.filter(manager.selector);
+        $root = $filtered.length ? $filtered : $root.find(manager.selector);
+      } else {
+        $root = $root.find(manager.selector);
+      }
+    }
 
-        // Very similar to HTML except this one will appendChild by default.
-        insert  : function ($root, $el) {
-            $root.append($el);
-        },
+    // Use the insert method if the parent's `insert` argument is true.
+    if (rentManager.insert) {
+      this.insert($root, $el);
+    } else {
+      this.html($root, $el);
+    }
+  },
 
-        // Return a deferred for when all promises resolve/reject.
-        when    : function (promises) {
-            return $.when.apply(null, promises);
-        },
+  // Override this with a custom HTML method, passed a root element and content
+  // (a jQuery collection or a string) to replace the innerHTML with.
+  html: function($root, content) {
+    $root.html(content);
+  },
 
-        // By default, render using underscore's templating.
-        render  : function (template, context) {
-            return template(context);
-        },
+  // Used for inserting subViews in a single batch.  This gives a small
+  // performance boost as we write to a disconnected fragment instead of to the
+  // DOM directly. Smarter browsers like Chrome will batch writes internally
+  // and layout as seldom as possible, but even in that case this provides a
+  // decent boost.  jQuery will use a DocumentFragment for the batch update,
+  // but Cheerio in Node will not.
+  htmlBatch: function(rootView, subViews, selector) {
+    // Shorthand the parent manager object.
+    var rentManager = rootView.__manager__;
+    // Create a simplified manager object that tells partial() where
+    // place the elements.
+    var manager = { selector: selector };
 
-        // A method to determine if a View contains another.
-        contains: function (parent, child) {
-            return $.contains(parent, child);
-        }
-    };
+    // Get the elements to be inserted into the root view.
+    var els = _.reduce(subViews, function(memo, sub) {
+      // Check if keep is present - do boolean check in case the user
+      // has created a `keep` function.
+      var keep = typeof sub.keep === "boolean" ? sub.keep : sub.options.keep;
+      // If a subView is present, don't push it.  This can only happen if
+      // `keep: true`.  We do the keep check for speed as $.contains is not
+      // cheap.
+      var exists = keep && $.contains(rootView.el, sub.el);
+
+      // If there is an element and it doesn't already exist in our structure
+      // attach it.
+      if (sub.el && !exists) {
+        memo.push(sub.el);
+      }
+
+      return memo;
+    }, []);
+
+    // Use partial to apply the elements. Wrap els in jQ obj for cheerio.
+    return this.partial(rootView.$el, $(els), rentManager, manager);
+  },
+
+  // Very similar to HTML except this one will appendChild by default.
+  insert: function($root, $el) {
+    $root.append($el);
+  },
+
+  // Return a deferred for when all promises resolve/reject.
+  when: function(promises) {
+    return $.when.apply(null, promises);
+  },
+
+  // A method to determine if a View contains another.
+  contains: function(parent, child) {
+    return $.contains(parent, child);
+  }
+};
 
 // Maintain a list of the keys at define time.
-    keys = _.keys(LayoutManager.prototype.options);
+keys = _.keys(LayoutManager.prototype.options);
 
-})(typeof global === "object" ? global : this);
+// Assign `LayoutManager` object for AMD loaders.
+return LayoutManager;
+
+}));

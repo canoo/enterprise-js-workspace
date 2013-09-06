@@ -9,7 +9,7 @@ define([
     'controller/Controller',
 
     // plugins and scripts
-    'templates/HandlebarsDateHelper',
+    'templates/HandlebarsHelper',
     'backbone.layoutmanager'
 
 ], function ($, _, Backbone, Notes, MainView, Controller) {
@@ -22,16 +22,18 @@ define([
             Backbone.Layout.configure({
 
                 // This is really useful to treat Views as Layouts
-                manage: true,
+                manage        : true,
 
-                prefix: 'app/templates/',
+                // templates are located inside the templates folder
+                prefix        : 'app/templates/',
 
                 // make layout manager work with handlebars
-                render: function (template, context) {
+                renderTemplate: function (template, context) {
                     return template(context);
                 },
 
-                fetch: function (path) {
+                // make layoutmanager to fetch templates from the server
+                fetchTemplate : function (path) {
                     // To put this method into async-mode, simply call `async` and store the
                     // return value (callback function).
                     var done = this.async();

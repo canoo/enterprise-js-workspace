@@ -1,8 +1,7 @@
 define([
     'moment',
     'handlebars'
-], function(moment,
-            Handlebars) {
+], function(moment, Handlebars) {
 
     Handlebars.registerHelper('prettyDate', function(date, options) {
         var format = options.hash.format || 'HH:mm:ss';

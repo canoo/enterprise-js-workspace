@@ -22,10 +22,6 @@ require.config({
             exports: 'Backbone'
         },
 
-        'backbone.layoutmanager': {
-            deps: [ 'backbone' ]
-        },
-
         'handlebars': {
             exports: 'Handlebars'
         }

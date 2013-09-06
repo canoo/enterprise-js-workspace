@@ -19,8 +19,8 @@ define([
 
         // add sub views before the main view gets rendered
         beforeRender: function () {
-            this.insertView('#input', new InputView());
-            this.insertView('#detail', new DetailView({ collection: this.collection }));
+            this.insertView('#input', new InputView({ parent: this }));
+            this.insertView('#detail', new DetailView({ parent: this, collection: this.collection }));
         }
     });
 });
