@@ -89,8 +89,8 @@ This workshop contains following exercises
   [1]: https://github.com/canoo/enterprise-js-workspace/tree/master/10-exercise-requirejs     "Require JS"
   [2]: https://github.com/canoo/enterprise-js-workspace/tree/master/30-exercise-testing       "Buster JS"
   [3]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-view       "Backbone Views"
-  [4]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-model      "Backbone Model"
-  [5]: https://github.com/canoo/enterprise-js-workspace/tree/master/50-exercise-bb-mvc        "Backbone MVC"
+  [4]: https://github.com/canoo/enterprise-js-workspace/tree/master/52-exercise-bb-model      "Backbone Model"
+  [5]: https://github.com/canoo/enterprise-js-workspace/tree/master/54-exercise-bb-mvc        "Backbone MVC"
 
   [6]: http://git-scm.com "Git"
   [7]: http://nodejs.org "Node.js"
