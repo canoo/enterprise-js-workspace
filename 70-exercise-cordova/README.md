@@ -23,11 +23,23 @@ add your favorite mobile platform (make sure you have the appropriate SDK instal
 cordova platform add ios|android
 ```
 
-## set grunt build
+## setup grunt build
+
+adjust build target dir
+```JavaScript
+//    var buildDir = 'build/';
+    var buildDir = 'mobile/www/';
+```
 
 run grunt
 ```bash
 grunt
+```
+
+run cordova build
+```bash
+cd ~/mobile/
+cordova build
 ```
 
 ## open native mobile project and deploy
