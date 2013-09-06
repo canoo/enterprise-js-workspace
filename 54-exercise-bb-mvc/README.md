@@ -39,7 +39,10 @@ DetailView
         <div class="item-delete hbox"><span class="close-x">x</span></div>
     ```
 
-2. Extend the DetailView class to listen to click events on the button
+2. Extend the DetailView class
+    - listen to click events on the button
+    - listen on delete events on the collection to render the delete changes
+    - implement on delete button click handler
 
     ```JavaScript
         ...
