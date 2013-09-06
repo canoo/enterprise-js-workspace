@@ -66,6 +66,15 @@ npm install -g http-server
 
 #### Now you should be ready to checkout and run the exersices.
 
+1.8 Optional
+------------
+
+Optionally, for the last exercises you can install 
+
+- [XCode][12] to have an iOS simulator
+- [Android SDK][13] and create a virtual device to have a Android simulator
+
+
 
 2.0 Project setup
 -----------------
@@ -75,6 +84,16 @@ Checkout the source code using your git client.
 ```
 git clone https://github.com/canoo/enterprise-js-workspace.git
 ```
+
+3.0 Workshop Slides
+-------------------
+
+Workshop slides are available on here: 
+
+http://canoo.github.io/enterprise-js-slides
+
+
+
 
 # Exercises
 
@@ -98,3 +117,7 @@ This workshop contains following exercises
   [9]: http://bower.io "Bower"
   [10]: http://busterjs.org "Buster.js"
   [11]: http://phantomjs.org "Phantom.js"
+  [12]: https://developer.apple.com/xcode "XCode"
+  [13]: http://developer.android.com/sdk/index.html "Android"
+  [14]: http://canoo.github.io/enterprise-js-slides "Slides"
+  
