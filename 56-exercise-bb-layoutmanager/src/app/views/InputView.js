@@ -14,16 +14,11 @@ define([
             "keyup #input": "onEnterPressed"
         },
 
-        initialize: function(options) {
-            options = options || {};
-            this.parent = options.parent;
-        },
-
         notifyAdd: function () {
             var $input = this.$('#input');
             var name = $input.val();
-            if (name && this.parent) {
-                this.parent.trigger("item:add", {
+            if (name) {
+                this.trigger("item:add", {
                     name: name
                 });
                 $input.val('');

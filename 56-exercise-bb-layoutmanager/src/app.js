@@ -48,19 +48,7 @@ define([
         },
 
         start: function () {
-            var notes = new Notes();
-            var mainView = new MainView({
-                collection: notes
-            });
-
-//            mainView.render().done(function () {
-            var controller = new Controller({
-                mainView  : mainView,
-                collection: notes
-            });
-//            });
-
-            mainView.render();
+            var controller = new Controller();
         }
     }
 

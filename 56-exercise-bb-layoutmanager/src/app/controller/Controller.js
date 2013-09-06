@@ -2,18 +2,24 @@ define([
     // Libs
     '_',
     'backbone',
-    'models/Note'
-], function (_, Backbone, Note) {
+    'models/Note',
+    'models/Notes',
 
-    var Controller = function (options) {
-        this.mainView = options.mainView;
-        this.collection = options.collection;
+    'views/MainView'
+], function (_, Backbone, Note, NoteCollection, MainView) {
+
+    var Controller = function () {
+        this.collection = new NoteCollection();
         this.initialize();
     };
 
     _.extend(Controller.prototype, Backbone.Events, {
 
         initialize: function() {
+
+            this.mainView = new MainView({
+                collection: this.collection
+            });
 
             // events from child views are propagated to parent views
             this.listenTo(this.mainView, "item:add", this.onNoteAdd);

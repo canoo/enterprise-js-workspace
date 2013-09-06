@@ -18,8 +18,6 @@ define([
         },
 
         initialize: function (options) {
-            options = options || {};
-            this.parent = options.parent;
             this.listenTo(this.collection, 'all', this.render);
         },
 
@@ -47,20 +45,16 @@ define([
         },
 
         notifyDelete: function (index) {
-            if (this.parent) {
-                this.parent.trigger("item:delete", {
-                    index: index
-                });
-            }
+            this.trigger("item:delete", {
+                index: index
+            });
         },
 
         notifyChange: function (index, value) {
-            if (this.parent) {
-                this.parent.trigger("item:change", {
-                    index: index,
-                    value: value
-                });
-            }
+            this.trigger("item:change", {
+                index: index,
+                value: value
+            });
         }
 
     });

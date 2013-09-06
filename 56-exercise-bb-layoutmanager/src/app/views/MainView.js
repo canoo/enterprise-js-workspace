@@ -19,8 +19,18 @@ define([
 
         // add sub views before the main view gets rendered
         beforeRender: function () {
-            this.insertView('#input', new InputView({ parent: this }));
-            this.insertView('#detail', new DetailView({ parent: this, collection: this.collection }));
+
+            var inputView = new InputView({ parent: this });
+            this.listenTo(inputView, 'all', function (eventName, data) {
+                this.trigger(eventName, data);
+            });
+            this.insertView('#input', inputView);
+
+            var detailView = new DetailView({ parent: this, collection: this.collection });
+            this.listenTo(detailView, 'all', function (eventName, data) {
+                this.trigger(eventName, data);
+            });
+            this.insertView('#detail', detailView);
         }
     });
 });
