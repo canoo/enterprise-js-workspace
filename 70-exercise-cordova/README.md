@@ -11,7 +11,7 @@ sudo npm install -g cordova
 ## create a cordova project
 
 ```bash
-cd ~/enterprise-js-workspace
+cd ~/enterprise-js-workspace/70-exercise-cordova
 ```
 
 ```bash
