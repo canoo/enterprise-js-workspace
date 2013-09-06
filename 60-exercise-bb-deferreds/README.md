@@ -13,7 +13,7 @@ Delete Animation
   _startDeleteItemAnimation: function(el) {
       var dfd = $.Deferred();
       // e.g. scale down the item 
-      // the duratio is set to half a second
+      // the duration is set to half of a second
       Move(el).scale(0).duration(500).end(function () {
           // resolve the deferred object when the animation is finished
           dfd.resolve();
