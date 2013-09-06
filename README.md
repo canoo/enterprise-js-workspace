@@ -1,7 +1,5 @@
 # Enterprise JS Workshop Workspace
 
-This project contains workshop related exercises
-
 1. Environment Setup
 --------------------
 
@@ -64,9 +62,13 @@ npm install -g http-server
 
 ---
 
-#### Now you should be ready to checkout and run the exersices.
+1.8 Browser
+-----------
 
-1.8 Optional
+Please make sure to have a modern browser with a propper HTML5 support.
+
+
+1.9 Optional
 ------------
 
 Optionally, for the last exercises you can install 
@@ -74,6 +76,8 @@ Optionally, for the last exercises you can install
 - [XCode][12] to have an iOS simulator
 - [Android SDK][13] and create a virtual device to have a Android simulator
 
+
+#### Now you should be ready to checkout and run the exersices.
 
 
 2.0 Project setup
@@ -91,8 +95,6 @@ git clone https://github.com/canoo/enterprise-js-workspace.git
 Workshop slides are available on here: 
 
 http://canoo.github.io/enterprise-js-slides
-
-
 
 
 # Exercises
@@ -121,3 +123,4 @@ This workshop contains following exercises
   [13]: http://developer.android.com/sdk/index.html "Android"
   [14]: http://canoo.github.io/enterprise-js-slides "Slides"
   
+
