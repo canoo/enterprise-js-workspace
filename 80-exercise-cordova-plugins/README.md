@@ -1,48 +1,25 @@
-Exercise - Cordova
-==================
+# Exercise - Cordova Plugins
 
-## install cordova module
+## plugin installation
+
+### install a standard plugin (e.g. vibration)
+```bash
+cordova plugins add https://git-wip-us.apache.org/repos/asf/cordova-plugin-vibration.git
+```
+
+#### list of standard plugins
+
+https://git-wip-us.apache.org/repos/asf/cordova-plugin-*
+
+### install a custom plugin (BarcodeScanner)
 
 ```bash
-sudo npm install -g cordova
-```
-(make sure you have a recent node.js version >=v0.10.18)
-
-## create a cordova project
-
-```bash
-cd ~/enterprise-js-workspace/70-exercise-cordova
+cordova plugins add https://github.com/wildabeast/BarcodeScanner.git
 ```
 
-```bash
-cordova create mobile com.canoo.enterprisejs.mobile MyNotes
-```
 
-add your favorite mobile platform (make sure you have the appropriate SDK installed)
-```bash
-cordova platform add ios|android
-```
+## other (pre 3.0.0) plugins
 
-## setup grunt build
+**see:**
 
-adjust build target dir
-```JavaScript
-//    var buildDir = 'build/';
-    var buildDir = 'mobile/www/';
-```
-
-run grunt
-```bash
-grunt
-```
-
-run cordova build
-```bash
-cd ~/mobile/
-cordova build
-```
-
-## open native mobile project and deploy
-
-XCode, Android Studio ...
-
+https://github.com/phonegap/phonegap-plugins
