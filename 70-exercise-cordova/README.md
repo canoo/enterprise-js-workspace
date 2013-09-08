@@ -11,11 +11,38 @@ sudo npm install -g cordova
 ## create a cordova project
 
 ```bash
-cd ~/enterprise-js-workspace
+cd ~/enterprise-js-workspace/70-exercise-cordova
 ```
 
 ```bash
 cordova create mobile com.canoo.enterprisejs.mobile MyNotes
 ```
 
+add your favorite mobile platform (make sure you have the appropriate SDK installed)
+```bash
+cordova platform add ios|android
+```
+
+## setup grunt build
+
+adjust build target dir
+```JavaScript
+//    var buildDir = 'build/';
+    var buildDir = 'mobile/www/';
+```
+
+run grunt
+```bash
+grunt
+```
+
+run cordova build
+```bash
+cd ~/mobile/
+cordova build
+```
+
+## open native mobile project and deploy
+
+XCode, Android Studio ...
 
