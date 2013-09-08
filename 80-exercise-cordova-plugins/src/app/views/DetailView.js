@@ -58,7 +58,17 @@ define([
         onItemDelete: function (event) {
             var $target = $(event.target);
             var $item = $target.parents('[data-index]');
-            this.deleteItem2($item);
+            var me = this;
+            navigator.notification.confirm(
+                    'Do you really want to delete this entry?', // message
+                    function(buttonIndex) { // callback to invoke with index of button pressed
+                        if (buttonIndex === 1) {
+                            me.deleteItem2($item);
+                        }
+                    },
+                    'Confirmation', // title
+                    'Delete,Cancel' // buttonLabels
+            );
         },
 
         deleteItem1: function($item) {
@@ -70,7 +80,6 @@ define([
         },
 
         deleteItem2: function($deleteItem) {
-
             var me = this;
             var deferreds = [];
 
