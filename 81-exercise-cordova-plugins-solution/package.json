@@ -1,0 +1,11 @@
+{
+  "name": "exercise-cordova",
+  "version": "0.0.1",
+  "description": "cordova exercise",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib": "~0.7.0",
+    "grunt-contrib-cssmin": "~0.6.1",
+    "grunt-contrib-requirejs": "~0.4.1"
+  }
+}
