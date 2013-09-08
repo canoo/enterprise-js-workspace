@@ -28,17 +28,17 @@ define([
             };
         },
 
-        _startItemAnimation: function(el) {
+        _startItemAnimation: function($el) {
             var dfd = $.Deferred();
-            Move(el).set('-webkit-transform', 'rotateX(360deg)').duration(1000).end(function () {
+            Move($el.get(0)).set('-webkit-transform', 'rotateX(360deg)').duration(1000).end(function () {
                 dfd.resolve();
             });
             return dfd.promise();
         },
 
-        _startDeleteItemAnimation: function(el) {
+        _startDeleteItemAnimation: function($el) {
             var dfd = $.Deferred();
-            Move(el).set('-webkit-transform', 'rotateX(90deg)').duration(500).end(function () {
+            Move($el.get(0)).set('-webkit-transform', 'translateX(' + $el.width() * 2 + 'px)').duration(500).end(function () {
                 dfd.resolve();
             });
             return dfd.promise();
@@ -60,7 +60,7 @@ define([
         deleteItem1: function($item) {
             var me = this;
             var index = $item.data("index");
-            me._startDeleteItemAnimation($item.get(0)).then(function () {
+            me._startDeleteItemAnimation($item).then(function () {
                 me.notifyDelete(index);
             });
         },
@@ -75,12 +75,12 @@ define([
 
             // start a new animation for non delete items
             $items.each(function(index, el) {
-                var promise = me._startItemAnimation(el);
+                var promise = me._startItemAnimation($(el));
                 deferreds.push(promise);
             });
 
             // start delete animation for the delete items
-            var promise = me._startDeleteItemAnimation($deleteItem.get(0));
+            var promise = me._startDeleteItemAnimation($deleteItem);
             deferreds.push(promise);
 
             $.when.apply(null, deferreds).then(function () {
