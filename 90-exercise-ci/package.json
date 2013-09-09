@@ -1,14 +1,14 @@
 {
-  "name": "90-exercise-ci",
-  "version": "1.0.0",
-  "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib": "~0.7.0",
-    "grunt-contrib-cssmin": "~0.6.1",
-    "grunt-contrib-requirejs": "~0.4.1",
-    "buster-amd": "~0.3.0",
-    "buster-istanbul": "~0.1.10",
-    "grunt-buster": "~0.2.1",
-    "grunt-contrib-clean": "~0.5.0"
-  }
+    "name"           : "90-exercise-ci",
+    "version"        : "1.0.0",
+    "devDependencies": {
+        "grunt"                  : "~0.4.1",
+        "grunt-contrib"          : "~0.7.0",
+        "grunt-contrib-cssmin"   : "~0.6.1",
+        "grunt-contrib-requirejs": "~0.4.1",
+        "buster-amd"             : "~0.3.0",
+        "buster-istanbul"        : "~0.1.10",
+        "grunt-buster"           : "~0.2.1",
+        "grunt-contrib-clean"    : "~0.5.0"
+    }
 }

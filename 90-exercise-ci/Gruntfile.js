@@ -84,9 +84,10 @@ module.exports = function (grunt) {
             buster: {
                 teamcity: {
                     test  : {
+                        // run the CI buster configuration
+                        'config-group': 'CI',
                         config        : 'test/buster.js',
-                        reporter      : 'teamcity',
-                        'config-group': 'CI' // change when coverage is needed
+                        reporter      : 'teamcity'
                     },
                     server: {
                         port: 1111
@@ -95,15 +96,23 @@ module.exports = function (grunt) {
 
                 dev: {
                     test: {
+                        // run the Browser buster configuration
+                        'config-group': 'Browser',
                         config        : 'test/buster.js',
                         reporter      : 'specification',
-                        'log-level'   : 'debug',
-                        'config-group': 'Browser'
+                        'log-level'   : 'debug'
                     },
 
                     server: {
                         port: 1111
                     }
+                }
+            },
+
+            watch: {
+                buster: {
+                    files: [ 'src/app/**/*.js', 'test/**/*-test.js'],
+                    tasks: ['buster:dev']
                 }
             }
         }
