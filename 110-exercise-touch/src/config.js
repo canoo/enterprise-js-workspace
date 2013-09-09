@@ -10,7 +10,8 @@ require.config({
         'text'                  : '../scripts/requirejs-text/text',
         'underscore'            : '../scripts/underscore/underscore',
         'moment'                : '../scripts/moment/moment',
-        'move'                  : '../scripts/movejs/move'
+        'move'                  : '../scripts/movejs/move',
+        'hammer'                : '../scripts/hammerjs/dist/hammer'
     },
 
     shim: {

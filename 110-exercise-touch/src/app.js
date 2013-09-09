@@ -1,7 +1,7 @@
 define([
 
     // libs
-    '$', '_', 'backbone',
+    '$', '_', 'backbone', 'hammer',
 
     // components
     'models/Notes',
@@ -12,11 +12,15 @@ define([
     'templates/HandlebarsHelper',
     'backbone.layoutmanager'
 
-], function ($, _, Backbone, Notes, MainView, Controller) {
+], function ($, _, Backbone, Hammer, Notes, MainView, Controller) {
 
     return {
 
         init: function () {
+
+            // One Hammer to rule them all
+            // register on hammer instance on the body element
+            Hammer(document.body);
 
             // Configure LayoutManager
             Backbone.Layout.configure({
