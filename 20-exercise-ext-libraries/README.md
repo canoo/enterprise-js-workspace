@@ -10,7 +10,7 @@ Require.js setup
 
 2. Tell Require.js about the new dependency
 
-Your your require.js config file should look something like this
+Your require.js config file should look something like this
 
 ```JavaScript
 
