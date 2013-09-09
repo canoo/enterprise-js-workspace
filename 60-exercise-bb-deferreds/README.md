@@ -1,7 +1,8 @@
 Exercise - Deferrds
 ===================
 
-In this exercise you will use deferrds to synchronize asynchronous JavaScript activities. This techniques will help you to create concise APIs for asynchronous components.
+In this exercise you will use deferrds to synchronize asynchronous JavaScript activities.
+This techniques will help you to create concise APIs for asynchronous components.
 
 
 Delete Animation
