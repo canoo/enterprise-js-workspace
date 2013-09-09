@@ -14,21 +14,24 @@ define([
         template: 'detail',
 
         events: {
-            "blur .item-name"   : "onItemFocusLost",
-            "click .item-delete": "onItemDelete"
+            "blur .item-name" : "onItemFocusLost",
+
+            // change the click event to tap event. Hammerjs will map tap events on click events on the desktop
+            "tap .item-delete": "onItemDelete",
+            "swipe li"        : "onSwipeDelete"
         },
 
         initialize: function (options) {
             this.listenTo(this.collection, 'all', this.render);
         },
 
-        serialize : function () {
+        serialize: function () {
             return {
                 notes: this.collection.toJSON()
             };
         },
 
-        _startItemAnimation: function($el) {
+        _startItemAnimation: function ($el) {
             var dfd = $.Deferred();
             Move($el.get(0)).set('-webkit-transform', 'rotateX(360deg)').duration(1000).end(function () {
                 dfd.resolve();
@@ -36,7 +39,7 @@ define([
             return dfd.promise();
         },
 
-        _startDeleteItemAnimation: function($el) {
+        _startDeleteItemAnimation: function ($el) {
             var dfd = $.Deferred();
             Move($el.get(0)).set('-webkit-transform', 'translateX(' + $el.width() * 2 + 'px)').duration(500).end(function () {
                 dfd.resolve();
@@ -51,13 +54,18 @@ define([
             this.notifyChange(index, value);
         },
 
+        onSwipeDelete: function (event) {
+            var $target = $(event.currentTarget);
+            this.deleteItem2($target);
+        },
+
         onItemDelete: function (event) {
             var $target = $(event.target);
             var $item = $target.parents('[data-index]');
             this.deleteItem2($item);
         },
 
-        deleteItem1: function($item) {
+        deleteItem1: function ($item) {
             var me = this;
             var index = $item.data("index");
             me._startDeleteItemAnimation($item).then(function () {
@@ -65,7 +73,7 @@ define([
             });
         },
 
-        deleteItem2: function($deleteItem) {
+        deleteItem2: function ($deleteItem) {
 
             var me = this;
             var deferreds = [];
@@ -74,7 +82,7 @@ define([
             var $items = this.$('li[data-index!=' + index + ']');
 
             // start a new animation for non delete items
-            $items.each(function(index, el) {
+            $items.each(function (index, el) {
                 var promise = me._startItemAnimation($(el));
                 deferreds.push(promise);
             });
@@ -87,6 +95,7 @@ define([
                 me.notifyDelete(index);
             });
         },
+
 
         notifyDelete: function (index) {
             this.trigger("item:delete", {

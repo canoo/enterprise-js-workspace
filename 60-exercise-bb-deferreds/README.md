@@ -7,7 +7,7 @@ In this exercise you will use deferrds to synchronize asynchronous JavaScript ac
 Delete Animation
 ================
 
-1. Open the DetailView class and use the excelent [move.js][1] animation library to create a async animation function which is triggered when the user clicks on the delete icon. This method should be surrounded with a defferred object.
+1. Open the DetailView class and use the excellent [move.js][1] animation library to create a async animation function which is triggered when the user clicks on the delete icon. This method should be surrounded with a defferred object.
 
   ```JavaScript
   _startDeleteItemAnimation: function(el) {
@@ -45,14 +45,61 @@ Delete Animation
 DetailView - Item Animation
 ===========================
 
-// TODO
-The item animation shall be triggered on all other items wich will remain 
+Here we will extend the first example and synchronize several animations.
+
+1. This animation shall be triggered when the user clicks on the delete icon. This method should be also surrounded with a defferred object.
 
   ```JavaScript
-  
-  // TODO
-  
+
+    _startItemAnimation: function(el) {
+        var dfd = $.Deferred();
+        // e.g. rotate the item
+        // the duration is set to a second
+        var dfd = $.Deferred();
+        Move($el.get(0)).set('-webkit-transform', 'rotateX(360deg)').duration(1000).end(function () {
+            dfd.resolve();
+        });
+        return dfd.promise();
+    }
+
+    ```
+
+2. Change the 'onItemDelete' method to invoke the delete animation on the delete item and the item animation on all other items in the list. Collect all deferred objects into an array and use the Deferred.when() method to synchronize all animations.
+
+
+  ```JavaScript
+
+    onItemDelete: function (event) {
+
+        var me = this;
+        var deferreds = [];
+        var $target = $(event.target);
+
+        // delete item
+        var $item = $target.parents('[data-index]');
+        var index = $item.data("index");
+
+        // all other items
+        var $items = this.$('li[data-index!=' + index + ']');
+
+        // start a new animation for non delete items
+        $items.each(function(index, el) {
+            var promise = me._startItemAnimation($(el));
+            deferreds.push(promise);
+        });
+
+        // start delete animation for the delete items
+        var promise = me._startDeleteItemAnimation($item);
+        deferreds.push(promise);
+
+        // wait until all animations has been finished and trigger delete action on the controller
+        $.when.apply(null, deferreds).then(function () {
+            me.notifyDelete(index);
+        });
+
+    }
+
   ```
 
-    
+
   [1]: http://visionmedia.github.io/move.js "Move.js"

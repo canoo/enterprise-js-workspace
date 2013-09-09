@@ -28,20 +28,18 @@ define([
             };
         },
 
-        _startItemAnimation: function(el) {
-            var dfd = $.Deferred();
-            Move(el).set('-webkit-transform', 'rotateX(360deg)').duration(1000).end(function () {
-                dfd.resolve();
-            });
-            return dfd.promise();
+        _startItemAnimation: function($el) {
+            // TODO
+            // - create a deferred object
+            // - implement a animation for a note item of your choice with a duration of 1s
+            // - resolve the deferred when the animation has finished
         },
 
-        _startDeleteItemAnimation: function(el) {
-            var dfd = $.Deferred();
-            Move(el).set('-webkit-transform', 'rotateX(90deg)').duration(500).end(function () {
-                dfd.resolve();
-            });
-            return dfd.promise();
+        _startDeleteItemAnimation: function($el) {
+            // TODO
+            // - create a deferred object
+            // - implement a animation for a note item of your choice with a duration of eg. 0.5s
+            // - resolve the deferred when the animation has finished
         },
 
         onItemFocusLost: function (event) {
@@ -58,34 +56,18 @@ define([
         },
 
         deleteItem1: function($item) {
-            var me = this;
-            var index = $item.data("index");
-            me._startDeleteItemAnimation($item.get(0)).then(function () {
-                me.notifyDelete(index);
-            });
+            // TODO
+            // start delete animation
+            // wait until animation has finished and trigger the delete action
         },
 
-        deleteItem2: function($deleteItem) {
-
-            var me = this;
-            var deferreds = [];
-
-            var index = $deleteItem.data("index");
-            var $items = this.$('li[data-index!=' + index + ']');
-
-            // start a new animation for non delete items
-            $items.each(function(index, el) {
-                var promise = me._startItemAnimation(el);
-                deferreds.push(promise);
-            });
-
-            // start delete animation for the delete items
-            var promise = me._startDeleteItemAnimation($deleteItem.get(0));
-            deferreds.push(promise);
-
-            $.when.apply(null, deferreds).then(function () {
-                me.notifyDelete(index);
-            });
+        deleteItem2: function($item) {
+            // TODO
+            // use jquery to find all other items in the list
+            // start the delete animation
+            // start item animations on each item in the list
+            // collect the deferred objects
+            // wait until all objects has been completed and trigger the delete action
         },
 
         notifyDelete: function (index) {

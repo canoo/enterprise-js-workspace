@@ -57,6 +57,7 @@ define([
             this.deleteItem2($item);
         },
 
+
         deleteItem1: function($item) {
             var me = this;
             var index = $item.data("index");
@@ -87,6 +88,7 @@ define([
                 me.notifyDelete(index);
             });
         },
+
 
         notifyDelete: function (index) {
             this.trigger("item:delete", {
