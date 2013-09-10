@@ -13,12 +13,18 @@ define([
         this.initialize();
     };
 
+    /**
+     * Extend also from Backbone.Events to make the controller fully compatible with Backbone event API
+     */
     _.extend(Controller.prototype, Backbone.Events, {
 
         initialize: function() {
+
+            // render the views
             this.inputView.render();
             this.detailView.render();
 
+            // now we can listen to view events with the handy listenTo method
             this.listenTo(this.inputView, "item:add", this.onNoteAdd);
             this.listenTo(this.detailView, "item:change", this.onNoteChange);
         },

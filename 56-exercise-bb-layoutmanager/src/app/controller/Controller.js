@@ -21,7 +21,7 @@ define([
                 collection: this.collection
             });
 
-            // events from child views are propagated to parent views
+            // events from child views are bubbled to parent views
             this.listenTo(this.mainView, "item:add", this.onNoteAdd);
             this.listenTo(this.mainView, "item:change", this.onNoteChange);
             this.listenTo(this.mainView, "item:delete", this.onNoteDelete);

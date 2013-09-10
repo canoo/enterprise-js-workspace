@@ -10,6 +10,7 @@ define([
     var DetailView = Backbone.View.extend({
 
         // templates are referenced by name
+        // use the detail template
         template: 'detail',
 
         events: {
@@ -24,7 +25,7 @@ define([
         // No render method required
         // render: function() { },
 
-        // serialize method to pass data to the template
+        // serialize method to pass data required by the template
         serialize : function () {
             return {
                 notes: this.collection.toJSON()

@@ -26,6 +26,7 @@ define([
             var $input = this.$('#input');
             var name = $input.val();
             if (name) {
+                // fire application event and notify the controller in this case
                 this.trigger("item:add", {
                     name: name
                 });

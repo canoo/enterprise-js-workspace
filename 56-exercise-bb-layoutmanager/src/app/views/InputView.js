@@ -7,6 +7,8 @@ define([
     var InputView = Backbone.View.extend({
 
         className: 'input-view',
+
+        // uset the input template
         template: 'input',
 
         events: {

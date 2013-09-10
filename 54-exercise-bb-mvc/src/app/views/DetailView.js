@@ -17,6 +17,7 @@ define([
         },
 
         initialize: function() {
+            // listen on change and add events and render the view
             this.listenTo(this.collection, 'change add', this.render);
         },
 
@@ -33,6 +34,7 @@ define([
             var value = $target.html();
             var index = $target.parents('[data-index]').data("index");
 
+            // fire application event to notify the controller in this case
             this.trigger("item:change", {
                 value: value,
                 index: index
