@@ -52,7 +52,7 @@ DetailView
         },
         ...
         initialize: function() {
-            this.listenTo(this.collection, 'change add delete', this.render);
+            this.listenTo(this.collection, 'change add remove', this.render);
         },
         ...
         onItemDelete: function(event) {
