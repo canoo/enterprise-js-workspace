@@ -4,7 +4,9 @@ require.config({
         'app'   : '../app',
         'moment': '../scripts/moment/moment'
     },
-    shims  : {}
+    shims  : {
+        // non AMD capable scripts go here
+    }
 });
 
 // run the app
